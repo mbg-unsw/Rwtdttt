@@ -1,5 +1,3 @@
-####### !aggiusto l'if reverse
-
 if (!require("zoo")) install.packages("zoo")
 library(zoo)
 if (!require("haven")) install.packages("haven")
@@ -13,13 +11,6 @@ wtdttt <- function(time, start, end) {
   tstart <- as.numeric(start) - 0.5
   tend <- as.numeric(end) + 0.5
   delta <- tend - tstart
-  
-  # obstime deve stare dentro il df (poi anche logtime)
-  # if(!missing(reverse)) {
-  # df <- df %>%
-  #         mutate(obstime = as.numeric(as.Date(tend)-as.Date(time)))
-  #  } else {mutate(obstime = as.numeric(as.Date(time)-as.Date(tstart)))
-  # }
   
   # if(reverse==TRUE) {
   #   obstime <- as.numeric(as.Date(tend)-as.Date(time)) }
@@ -49,8 +40,7 @@ wtdttt <- function(time, start, end) {
   
 }
 
-
-########### PROVA
+########### 
 
 data_wtd <- read_dta("G:/Il mio Drive/Dottorato unipi/R functions/Stata files/wtddat_dates.dta")
 

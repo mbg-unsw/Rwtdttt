@@ -4,7 +4,7 @@ Description - basic wtd fit
 
 Usage
 
-wtdttt(formula, parameters, data, start, end, reverse, conttime,
+wtdttt(formula, parameters, data, start, end, reverse=F, conttime=F,
 	subset, na.action, init, control)
 
 ranwtdttt
@@ -13,7 +13,7 @@ Description - extension to wtdttt for random start times
 
 Usage
 
-ranwtdttt(formula, parameters, data, id, start, end, reverse, conttime,
+ranwtdttt(formula, parameters, data, id, start, end, reverse=F, conttime=F,
 	nsamp=1, subset, na.action, init, control)
 
 predict

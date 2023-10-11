@@ -1,11 +1,15 @@
 Package: Rwtdttt
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Parametric Waiting Time Distribution estimation
 Version: 0.1.0
-Author: Who wrote it
+Author: Sabrina Giometto, Malcolm Gillies, Henrik Støvring
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Estimation of prescription durations and treatment probability based on 
+the parametric Waiting Time Distribution
+    Pharmacoepidemiologic databases contains information on medication dispensings 
+at pharmacies. Studies using such datatypically require some estimate of duration of 
+treatment after a dispensing (known as the prescription duration), which can be estimated 
+using the parametric Waiting Time Distribution.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

@@ -3,7 +3,7 @@ Type: Package
 Title: Parametric Waiting Time Distribution estimation
 Version: 0.1.0
 Author: Sabrina Giometto, Malcolm Gillies, Henrik Støvring
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: Henrik Støvring <hstov@health.sdu.dk>
 Description: Estimation of prescription durations and treatment probability based on 
 the parametric Waiting Time Distribution
     Pharmacoepidemiologic databases contains information on medication dispensings 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{plot,wtd,ANY-method}
 \alias{plot,wtd,ANY-method}
-\title{Plot Diagnostics for a wtd Object}
+\title{Plot Diagnostics for a wtd Object (histogram vs parametric curve)}
 \usage{
 \S4method{plot}{wtd,ANY}(object, x, y, ...)
 }
@@ -10,5 +10,5 @@
 \item{wtd}{wtd object, typically result of wtdttt}
 }
 \description{
-Plot Diagnostics for a wtd Object
+Plot Diagnostics for a wtd Object (histogram vs parametric curve)
 }

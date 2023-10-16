@@ -2,7 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{predict,wtd-method}
 \alias{predict,wtd-method}
-\title{Predict Method for wtd Fits}
+\title{Predict Method for wtd Fits (probability or duration)}
 \usage{
 \S4method{predict}{wtd}(
   object,
@@ -22,5 +22,5 @@
 A vector of predictions
 }
 \description{
-Predict Method for wtd Fits
+Predict Method for wtd Fits (probability or duration)
 }

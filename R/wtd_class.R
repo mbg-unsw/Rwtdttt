@@ -7,6 +7,8 @@
 # Libraries are loaded via "Imports" in DESCRIPTION
 # library(bbmle)
 # library(class)
+#' @importClassesFrom bbmle mle2
+#'
 
 # Register a 'wtd' class, inheriting from 'mle2'
 
@@ -23,7 +25,6 @@ delta <- 1
 #' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
-#' @export
 #'
 #' @examples
 dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
@@ -64,7 +65,7 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 #' @param ... further arguments passed to other methods.
 #'
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
-#'
+#' @export
 wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 	subset, na.action=na.pass, init, control=NULL, ...) {
 
@@ -99,6 +100,7 @@ wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 #' @param ... further arguments passed to other methods.
 #'
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
+#' @export
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
                    nsamp=1, subset, na.action=na.pass, init, control=NULL, ...) {
 
@@ -117,6 +119,7 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
 #' @param wtd a fitted object of class inheriting from "wtd"
 #'
 #' @return A vector of predictions
+#' @export
 setMethod("predict", "wtd",
 	function(object, newdata=NULL, type="dur", distrx=NULL, quantile=0.8,
 		se.fit=FALSE, na.action=na.pass, ...) {
@@ -141,7 +144,7 @@ setMethod("predict", "wtd",
 #' Plot Diagnostics for a wtd Object (histogram vs parametric curve)
 #'
 #' @param wtd wtd object, typically result of wtdttt
-#'
+#' @export
 setMethod("plot", "wtd",
 	function(object, x, y, ...) {
 

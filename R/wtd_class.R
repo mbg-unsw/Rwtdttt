@@ -69,6 +69,19 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 	subset, na.action=na.pass, init, control=NULL, ...) {
 
+# parse 'form' to determine the distribution in use and test if it
+# is a supported one, otherwise error
+
+# parse 'parameters' to test if they match 'form', otherwise error
+
+# test if start, end are dates, error if a mix of types
+# test if outcome variable is a date
+# if start, end are dates and outcome is not, error
+
+# do continuity correction if required
+
+# depending on distribution in use, calculate initial values (if not supplied)
+
 	out <- mle2(form, parameters = parameters,
              start = init, data = data)
 

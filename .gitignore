@@ -47,3 +47,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Rd2pdf temp files
+.Rd2pdf*/

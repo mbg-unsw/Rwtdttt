@@ -14,7 +14,11 @@
 
 setClass("wtd", contains="mle2")
 
-delta <- 1
+# create a new environment for package global variables, e.g. "delta"
+# https://stackoverflow.com/questions/12598242/global-variables-in-packages-in-r
+
+wtdttt.env <- new.env(parent=emptyenv())
+wtdttt.env$delta <- 1
 
 #' The Lognormal Distribution
 #'
@@ -34,14 +38,18 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
     mean <- exp(mu + exp(2 * lnsigma)/2)
 
     if (log == FALSE) {
-      prob * pnorm(log(x), mu, sigma, lower.tail = FALSE) / mean + (1 - prob) / delta
+      prob * pnorm(log(x), mu, sigma, lower.tail = FALSE) / mean + (1 - prob) / wtdttt.env$delta
     } else {
-      log(prob * pnorm(log(x), mu, sigma, lower.tail = FALSE) / mean + (1 - prob) / delta)
+      log(prob * pnorm(log(x), mu, sigma, lower.tail = FALSE) / mean + (1 - prob) / wtdttt.env$delta)
     }
 
 }
 
-#' Fit a waiting time distribution model
+#' Estimate maximum likelihood estimate for parametric Waiting Time
+#' Distribution (WTD) based on observed prescription redemptions with
+#' adjustment for covariates. Reports estimates of prevalence fraction
+#' and specified percentile of inter-arrival density together with
+#' regression coefficients.
 #'
 #' @param form an object of class "formula" (or one that can be coered to that
 #' class): a symbolic description of the model to be fitted. The details of the
@@ -69,18 +77,18 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 	subset, na.action=na.pass, init, control=NULL, ...) {
 
-# parse 'form' to determine the distribution in use and test if it
-# is a supported one, otherwise error
+  # parse 'form' to determine the distribution in use and test if it
+  # is a supported one, otherwise error
 
-# parse 'parameters' to test if they match 'form', otherwise error
+  # parse 'parameters' to test if they match 'form', otherwise error
 
-# test if start, end are dates, error if a mix of types
-# test if outcome variable is a date
-# if start, end are dates and outcome is not, error
+  # test if start, end are dates, error if a mix of types
+  # test if outcome variable is a date
+  # if start, end are dates and outcome is not, error
 
-# do continuity correction if required
+  # do continuity correction if required
 
-# depending on distribution in use, calculate initial values (if not supplied)
+  # depending on distribution in use, calculate initial values (if not supplied)
 
 	out <- mle2(form, parameters = parameters,
              start = init, data = data)
@@ -88,7 +96,11 @@ wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 	as(out, "wtd") # XXXX may need to store more things in the output obj
 }
 
-#' Extension to wtdttt for random start times
+#' Maximum likelihood estimation for parametric Waiting Time Distribution (WTD)
+#' based on observed prescription redemptions with adjustment for covariates
+#' using one or more random index times for each individual. Reports estimates
+#' of prevalence fraction and specified percentile of inter-arrival density
+#' together with regression coefficients.
 #'
 #' @param form an object of class "formula" (or one that can be coered to that
 #' class): a symbolic description of the model to be fitted. The details of the
@@ -117,17 +129,32 @@ wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
                    nsamp=1, subset, na.action=na.pass, init, control=NULL, ...) {
 
-  out <- mle2(form, parameters = parameters,
-              start = init, data = data)
+  # parse 'form' to determine the distribution in use and test if it
+  # is a supported one, otherwise error
 
-  as(out, "wtd") # XXXX may need to store more things in the output obj
+  # parse 'parameters' to test if they match 'form', otherwise error
+
+  # test if start, end are dates, error if a mix of types
+  # test if outcome variable is a date
+  # if start, end are dates and outcome is not, error
+  # test if nsamp is an integer >=1
+
+  # repeat nsamp times:
+  #   generate a random start date for each id sample window
+  #   extract dispense times within sample window for each id
+  #   add to temporary analysis data set
+
+  # call wtdttt using temporary data set
+
 }
 
 
 # XXXX only handling the lnorm case for now
 # Copied Sabrina's code, is there a normalising factor/logitp missing?
 
-#' Predict Method for wtd Fits (probability or duration)
+#' Make predictions based on an estimated parametric Waiting Time Distribution
+#' (WTD) model, either the probability of a person still being in treatment or
+#' the duration of observed prescription redemptions.
 #'
 #' @param wtd a fitted object of class inheriting from "wtd"
 #'
@@ -154,7 +181,9 @@ setMethod("predict", "wtd",
 	out
 })
 
-#' Plot Diagnostics for a wtd Object (histogram vs parametric curve)
+#' Make diagnostic plots showing the fit of an estimated parametric Waiting Time
+#' Distribution (WTD) with respect to the observed histogram of prescription
+#' redemptions.
 #'
 #' @param wtd wtd object, typically result of wtdttt
 #' @export

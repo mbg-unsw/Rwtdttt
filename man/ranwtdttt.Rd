@@ -2,11 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{ranwtdttt}
 \alias{ranwtdttt}
-\title{Maximum likelihood estimation for parametric Waiting Time Distribution (WTD)
-based on observed prescription redemptions with adjustment for covariates
-using one or more random index times for each individual. Reports estimates
-of prevalence fraction and specified percentile of inter-arrival density
-together with regression coefficients.}
+\title{Fit Waiting Time Distribution with random index times}
 \usage{
 ranwtdttt(
   form,
@@ -62,7 +58,7 @@ possible value is NULL, no action. Value na.exclude can be useful.}
 wtdttt returns an object of class "wtd" inheriting from "mle".
 }
 \description{
-Maximum likelihood estimation for parametric Waiting Time Distribution (WTD)
+`ranwtdttt()` estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
 based on observed prescription redemptions with adjustment for covariates
 using one or more random index times for each individual. Reports estimates
 of prevalence fraction and specified percentile of inter-arrival density

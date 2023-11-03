@@ -2,11 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{wtdttt}
 \alias{wtdttt}
-\title{Estimate maximum likelihood estimate for parametric Waiting Time
-Distribution (WTD) based on observed prescription redemptions with
-adjustment for covariates. Reports estimates of prevalence fraction
-and specified percentile of inter-arrival density together with
-regression coefficients.}
+\title{Fit Waiting Time Distribution}
 \usage{
 wtdttt(
   form,
@@ -58,7 +54,7 @@ possible value is NULL, no action. Value na.exclude can be useful.}
 wtdttt returns an object of class "wtd" inheriting from "mle".
 }
 \description{
-Estimate maximum likelihood estimate for parametric Waiting Time
+`wtdttt()` estimates the maximum likelihood estimate for a parametric Waiting Time
 Distribution (WTD) based on observed prescription redemptions with
 adjustment for covariates. Reports estimates of prevalence fraction
 and specified percentile of inter-arrival density together with

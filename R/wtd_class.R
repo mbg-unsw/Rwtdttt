@@ -45,7 +45,9 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
 }
 
-#' Estimate maximum likelihood estimate for parametric Waiting Time
+#' Fit Waiting Time Distribution
+#'
+#' `wtdttt()` estimates the maximum likelihood estimate for a parametric Waiting Time
 #' Distribution (WTD) based on observed prescription redemptions with
 #' adjustment for covariates. Reports estimates of prevalence fraction
 #' and specified percentile of inter-arrival density together with
@@ -96,7 +98,9 @@ wtdttt <- function(form, parameters=NULL, data, start, end, reverse=F,
 	as(out, "wtd") # XXXX may need to store more things in the output obj
 }
 
-#' Maximum likelihood estimation for parametric Waiting Time Distribution (WTD)
+#' Fit Waiting Time Distribution with random index times
+#'
+#' `ranwtdttt()` estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
 #' based on observed prescription redemptions with adjustment for covariates
 #' using one or more random index times for each individual. Reports estimates
 #' of prevalence fraction and specified percentile of inter-arrival density
@@ -152,6 +156,8 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
 # XXXX only handling the lnorm case for now
 # Copied Sabrina's code, is there a normalising factor/logitp missing?
 
+#' Make WTD predictions
+#'
 #' Make predictions based on an estimated parametric Waiting Time Distribution
 #' (WTD) model, either the probability of a person still being in treatment or
 #' the duration of observed prescription redemptions.
@@ -181,6 +187,8 @@ setMethod("predict", "wtd",
 	out
 })
 
+#' Make WTD diagnostic plots
+#'
 #' Make diagnostic plots showing the fit of an estimated parametric Waiting Time
 #' Distribution (WTD) with respect to the observed histogram of prescription
 #' redemptions.

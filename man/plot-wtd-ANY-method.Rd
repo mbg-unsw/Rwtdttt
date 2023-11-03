@@ -2,9 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{plot,wtd,ANY-method}
 \alias{plot,wtd,ANY-method}
-\title{Make diagnostic plots showing the fit of an estimated parametric Waiting Time
-Distribution (WTD) with respect to the observed histogram of prescription
-redemptions.}
+\title{Make WTD diagnostic plots}
 \usage{
 \S4method{plot}{wtd,ANY}(object, x, y, ...)
 }

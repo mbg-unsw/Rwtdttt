@@ -2,9 +2,7 @@
 % Please edit documentation in R/wtd_class.R
 \name{predict,wtd-method}
 \alias{predict,wtd-method}
-\title{Make predictions based on an estimated parametric Waiting Time Distribution
-(WTD) model, either the probability of a person still being in treatment or
-the duration of observed prescription redemptions.}
+\title{Make WTD predictions}
 \usage{
 \S4method{predict}{wtd}(
   object,

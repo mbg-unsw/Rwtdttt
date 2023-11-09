@@ -1,17 +1,16 @@
-# Lognormal
-
-#' Title
+#' The Lognormal distribution
 #'
-#' @param x
-#' @param logitp
-#' @param mu
-#' @param lnsigma
-#' @param log
+#' @param x vector of quantiles
+#' @param logitp how to describe this?
+#' @param mu mean
+#' @param lnsigma log of standard deviation
+#' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))
@@ -26,15 +25,14 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
     return(density=d)
 }
 
-# Weibull
 
-#' Title
+#' The Weibull distribution
 #'
-#' @param x
-#' @param logitp
-#' @param lnalpha
-#' @param lnbeta
-#' @param log
+#' @param x vector of quantiles
+#' @param logitp how to describe this?
+#' @param lnalpha log of alpha
+#' @param lnbeta log of beta
+#' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
 #' @export
@@ -54,15 +52,14 @@ dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
   return(density=d)
 }
 
-# Exponential
 
-#' Title
+#' The Exponential distribution
 #'
-#' @param x
-#' @param logitp
-#' @param lnalpha
-#' @param lnbeta
-#' @param log
+#' @param x vector of quantiles
+#' @param logitp how to describe this?
+#' @param lnalpha log of alpha
+#' @param lnbeta log of beta
+#' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
 #' @export
@@ -74,9 +71,9 @@ dexp <- function(x, logitp, lnbeta, log = FALSE) {
   beta <- exp(lnbeta)
 
   if (log == FALSE) {
-    d <- prob * exp(-((x*exp(lnbeta))) - lgamma(1)) * exp(lnbeta) + (1-prob)/delta
+    d <- prob * exp(-((x*exp(lnbeta))) ) * exp(lnbeta) + (1-prob)/delta
   } else {
-    d <- log(prob * exp(-((x*exp(lnbeta))) - lgamma(1)) * exp(lnbeta) + (1-prob)/delta)
+    d <- log(prob * exp(-((x*exp(lnbeta))) ) * exp(lnbeta) + (1-prob)/delta)
   }
   return(density=d)
 }

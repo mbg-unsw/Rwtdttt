@@ -11,6 +11,10 @@
 #'
 #' @examples
 #'
+#'
+
+delta <- 365
+
 dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))

@@ -1,19 +1,26 @@
-Package: Rwtdttt
 Type: Package
+Package: Rwtdttt
 Title: Parametric Waiting Time Distribution estimation
 Version: 0.1.0
 Author: Sabrina Giometto, Malcolm Gillies, Henrik Støvring
 Maintainer: Henrik Støvring <hstov@health.sdu.dk>
-Description: Estimation of prescription durations and treatment probability based on 
-  the parametric Waiting Time Distribution.
-  Pharmacoepidemiologic databases contains information on medication dispensings 
-  at pharmacies. Studies using such data typically require some estimate of duration of 
-  treatment after a dispensing (known as the prescription duration), which can be estimated 
-  using the parametric Waiting Time Distribution.
+Description: Estimation of prescription durations and treatment
+    probability based on the parametric Waiting Time Distribution.
+    Pharmacoepidemiologic databases contains information on medication
+    dispensings at pharmacies. Studies using such data typically require
+    some estimate of duration of treatment after a dispensing (known as
+    the prescription duration), which can be estimated using the
+    parametric Waiting Time Distribution.
 License: What license is it under?
+Imports: 
+    bbmle,
+    class,
+    data.table,
+    dplyr,
+    haven
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
-Imports: bbmle,
-  dplyr,
-  class

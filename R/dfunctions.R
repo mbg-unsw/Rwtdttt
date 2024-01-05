@@ -1,9 +1,9 @@
 #' The Lognormal distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param mu mean
-#' @param lnsigma log of standard deviation
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param mu mean on log-scale
+#' @param lnsigma log of standard deviation on log-scale
 #' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
@@ -32,10 +32,10 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
 #' The Weibull distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param lnalpha log of alpha
-#' @param lnbeta log of beta
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param lnalpha log of alpha (shape)
+#' @param lnbeta log of beta (scale)
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
@@ -59,10 +59,9 @@ dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
 
 #' The Exponential distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param lnalpha log of alpha
-#' @param lnbeta log of beta
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param lnbeta log of beta (scale)
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return

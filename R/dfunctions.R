@@ -13,9 +13,7 @@
 #'
 #'
 
-delta <- 365
-
-dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
+dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))
     sigma <- exp(lnsigma)
@@ -42,7 +40,7 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 #' @export
 #'
 #' @examples
-dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
+dweib <- function(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
   alpha <- exp(lnalpha)
@@ -68,7 +66,7 @@ dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
 #' @export
 #'
 #' @examples
-dexp <- function(x, logitp, lnbeta, log = FALSE) {
+dexp <- function(x, logitp, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
   beta <- exp(lnbeta)

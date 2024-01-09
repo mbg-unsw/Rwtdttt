@@ -83,6 +83,17 @@ wtdttt <- function(form, parameters=NULL, data, event.date.colname, event.time.c
   # lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
   # lnalphainit <- 0
 
+  # Redefining density functions to use the computed delta to scale
+  # the function to be a proper density
+  dlnorm <- function(x, logitp, mu, lnsigma, log = TRUE)
+    dlnorm(x, logitp, mu, lnsigma, delta = delta, log)
+
+  dweib <- function(x, logitp, lnalpha, lnbeta, log = TRUE)
+    dweib(x, logitp, lnalpha, lnbeta, delta = delta, log)
+
+  dexp <- function(x, logitp, lnbeta, log = TRUE)
+    dexp(x, logitp, lnbeta, delta = delta, log)
+
   out <- mle2(form, parameters = parameters,
               start = init, data = data)
 

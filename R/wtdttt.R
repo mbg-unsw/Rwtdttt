@@ -59,8 +59,30 @@ create_time <- function(event.date.colname, data, start, ...) {
 #' @export
 #'
 #' @examples
-wtdttt <- function(form, parameters=NULL, data, event.date.colname, event.time.colname, start, end, reverse=F,
-                   subset, na.action=na.pass, init, control=NULL, ...) {
+wtdttt <- function(form, parameters=NULL, data, id.colname=NA, event.date.colname=NA, event.time.colname=NA, start=NA, end=NA, reverse=F,
+                   subset=NA, na.action=na.pass, init=NA, control=NULL, ...) {
+
+  # id.colname <- deparse(substitute(id.colname))
+
+  # define column names in data
+  data.names <- names(data)
+
+  if(is.null(data) || (nrow(data)<1)) {
+    stop("data must be non-empty")
+  }
+
+  if(is.null(id.colname)) {
+    stop("id colname must be non-empty")
+  }
+
+  if(length(id.colname)>1) {
+    stop("id colname must be a single element")
+  }
+
+  if(!(id.colname %in% data.names)) {
+    stop("id colname is not in data")
+  }
+
 
   # computing starting values
   event.date.colname <- deparse(substitute(event.date.colname))
@@ -72,6 +94,10 @@ wtdttt <- function(form, parameters=NULL, data, event.date.colname, event.time.c
   # nonprevend <- sum(obstime > (delta * 2/3))
   nonprevend <- sum(data[, get(event.time.colname)] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
+
+  # do we want to generate a warning or an error?
+  if(prp<0) warning("The proportion of incident users is a negative value")
+
   lpinit <- qlogis(prp)
 
   # muinit <- mean(log(obstime[obstime < 0.5 * delta]))

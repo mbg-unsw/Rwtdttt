@@ -22,10 +22,10 @@ wtdttt.env$delta <- 1
 
 #' The Lognormal Distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param mu mean
-#' @param lnsigma log of standard deviation
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param mu mean on log-scale
+#' @param lnsigma log of standard deviation on log-scale
 #' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
@@ -53,7 +53,7 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 #' and specified percentile of inter-arrival density together with
 #' regression coefficients.
 #'
-#' @param form an object of class "formula" (or one that can be coered to that
+#' @param form an object of class "formula" (or one that can be coerced to that
 #' class): a symbolic description of the model to be fitted. The details of the
 #' model specification are given under 'Details'
 #' @param parameters model formulae for distribution parameters
@@ -155,6 +155,8 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
 
 # XXXX only handling the lnorm case for now
 # Copied Sabrina's code, is there a normalising factor/logitp missing?
+# HS 240108: No logitp missing here, as the prediction of Rx duration
+# only relies on parameters from FRD (mu, lnsigma)
 
 #' Make WTD predictions
 #'
@@ -192,6 +194,8 @@ setMethod("predict", "wtd",
 #' Make diagnostic plots showing the fit of an estimated parametric Waiting Time
 #' Distribution (WTD) with respect to the observed histogram of prescription
 #' redemptions.
+#' HS 240108: I think this needs to incorporate information on time period
+#' of observations (start and end specified in call to wtdttt)
 #'
 #' @param wtd wtd object, typically result of wtdttt
 #' @export

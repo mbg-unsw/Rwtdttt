@@ -1,9 +1,9 @@
 #' The Lognormal distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param mu mean
-#' @param lnsigma log of standard deviation
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param mu mean on log-scale
+#' @param lnsigma log of standard deviation on log-scale
 #' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
@@ -13,9 +13,7 @@
 #'
 #'
 
-delta <- 365
-
-dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
+dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))
     if(prob<0 | prob>1) stop("prob not between 0 and 1")
@@ -37,17 +35,17 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
 #' The Weibull distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param lnalpha log of alpha
-#' @param lnbeta log of beta
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param lnalpha log of alpha (shape)
+#' @param lnbeta log of beta (scale)
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
+dweib <- function(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
   if(prob<0 | prob>1) stop("prob not between 0 and 1")
@@ -66,17 +64,16 @@ dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
 
 #' The Exponential distribution
 #'
-#' @param x vector of quantiles
-#' @param logitp how to describe this?
-#' @param lnalpha log of alpha
-#' @param lnbeta log of beta
+#' @param x vector of prescription redemption times
+#' @param logitp log-odds of being a prevalent user
+#' @param lnbeta log of beta (scale)
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-dexp <- function(x, logitp, lnbeta, log = FALSE) {
+dexp <- function(x, logitp, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
   if(prob<0 | prob>1) stop("prob not between 0 and 1")

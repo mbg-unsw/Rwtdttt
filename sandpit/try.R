@@ -5,15 +5,16 @@ df <- read_dta("data/wtddat_dates.dta")
 df <- as.data.table(df)
 
 # create time variable
-create_time(data = df, event.date.colname = rx1time, start = as.Date('2014-01-01'))
+test <- create_time(data = df, event.date.colname = rx1time, start = as.Date('2014-01-01'))
 
 # fit waiting time distribution
 fit1 <- wtdttt(obstime ~ dlnorm(logitp, mu, lnsigma),
+               data = df,
                event.date.colname = rx1time,
                event.time.colname = obstime,
                start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
                init = list(logitp = 1.65, mu = 4.23, lnsigma = -1.26),
-               data = df)
+               )
 
 summary(fit1)
 

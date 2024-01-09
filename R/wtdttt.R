@@ -59,7 +59,7 @@ create_time <- function(event.date.colname, data, start, ...) {
 #' @export
 #'
 #' @examples
-wtdttt <- function(form, parameters=NULL, data, id.colname=NA, event.date.colname=NA, event.time.colname=NA, start=NA, end=NA, reverse=F,
+wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colname=NA, event.time.colname=NA, start=NA, end=NA, reverse=F,
                    subset=NA, na.action=na.pass, init=NA, control=NULL, ...) {
 
   # id.colname <- deparse(substitute(id.colname))

@@ -18,6 +18,8 @@ delta <- 365
 dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))
+    if(prob<0 | prob>1) stop("prob not between 0 and 1")
+
     sigma <- exp(lnsigma)
     mean <- exp(mu + exp(2 * lnsigma)/2)
 
@@ -26,7 +28,10 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
     } else {
       d <- log(prob * pnorm(log(x), mu, sigma, lower.tail = FALSE) / mean + (1 - prob) / delta)
     }
+
     return(density=d)
+
+    if(any(d<0 | d>1)) warning("density values not between 0 and 1")
 }
 
 
@@ -45,6 +50,8 @@ dlnorm <- function(x, logitp, mu, lnsigma, log = FALSE) {
 dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
+  if(prob<0 | prob>1) stop("prob not between 0 and 1")
+
   alpha <- exp(lnalpha)
   beta <- exp(lnbeta)
 
@@ -72,6 +79,8 @@ dweib <- function(x, logitp, lnalpha, lnbeta, log = FALSE) {
 dexp <- function(x, logitp, lnbeta, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
+  if(prob<0 | prob>1) stop("prob not between 0 and 1")
+
   beta <- exp(lnbeta)
 
   if (log == FALSE) {

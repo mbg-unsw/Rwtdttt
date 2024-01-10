@@ -16,6 +16,16 @@ create_time <- function(event.date.colname, data, start, ...) {
 
 }
 
+create_time_random <- function(event.date.colname, data, ...) {
+
+  event.date.colname <- deparse(substitute(event.date.colname))
+  # index.date.colname <- deparse(substitute(index.date.colname))
+
+  data[,r_index_date := sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(data), replace = T)]
+  data[,obstime := as.numeric(0.5 + get(event.date.colname) - r_index_date)]
+
+}
+
 #########################################################
 
 # Trying to implement pre-processing code in the function

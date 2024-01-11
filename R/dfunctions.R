@@ -4,6 +4,7 @@
 #' @param logitp log-odds of being a prevalent user
 #' @param mu mean on log-scale
 #' @param lnsigma log of standard deviation on log-scale
+#' @param delta XXXX
 #' @param log logical; if TRUE, probabilities p are given as log(p).
 #'
 #' @return
@@ -39,6 +40,7 @@ dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 #' @param logitp log-odds of being a prevalent user
 #' @param lnalpha log of alpha (shape)
 #' @param lnbeta log of beta (scale)
+#' @param delta XXXX
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return
@@ -67,6 +69,7 @@ dweib <- function(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE) {
 #' @param x vector of prescription redemption times
 #' @param logitp log-odds of being a prevalent user
 #' @param lnbeta log of beta (scale)
+#' @param delta XXXX
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
 #' @return

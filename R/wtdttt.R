@@ -1,3 +1,16 @@
+# wtdttt - R functions and documentation
+
+# Libraries are loaded via "Imports" in DESCRIPTION
+# library(bbmle)
+# library(class)
+#' @importClassesFrom bbmle mle2
+#'
+
+# Register a 'wtd' class, inheriting from 'mle2'
+# FIXME perhaps this belongs in a separate file
+
+setClass("wtd", contains="mle2")
+
 #' Create time variable
 #'
 #' @param event.date.colname
@@ -70,7 +83,20 @@ create_time_random <- function(event.date.colname, data, ...) {
 #'
 #' @examples
 wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colname=NA, event.time.colname=NA, start=NA, end=NA, reverse=F,
-                   subset=NA, na.action=na.pass, init=NA, control=NULL, ...) {
+                   subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
+
+  # parse 'form' to determine the distribution in use and test if it
+  # is a supported one, otherwise error
+
+  # parse 'parameters' to test if they match 'form', otherwise error
+
+  # test if start, end are dates, error if a mix of types
+  # test if outcome variable is a date
+  # if start, end are dates and outcome is not, error
+
+  # do continuity correction if required
+
+  # depending on distribution in use, calculate initial values (if not supplied)
 
   # id.colname <- deparse(substitute(id.colname))
 
@@ -133,5 +159,5 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   out <- mle2(form, parameters = parameters,
               start = init, data = data)
 
-  as(out, "wtd")
+  as(out, "wtd") # need to store more things in the output object e.g. delta
 }

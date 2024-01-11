@@ -1,11 +1,13 @@
-#' Title
+#' Make WTD predictions
 #'
-#' @param wtd
+#' Make predictions based on an estimated parametric Waiting Time Distribution
+#' (WTD) model, either the probability of a person still being in treatment or
+#' the duration of observed prescription redemptions.
 #'
-#' @return
+#' @param wtd a fitted object of class inheriting from "wtd"
+#'
+#' @return A vector of predictions
 #' @export
-#'
-#' @examples
 setMethod("predict", "wtd",
           function(object, newdata=NULL, type="dur", family = "lnorm", distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {

@@ -1,3 +1,5 @@
+# proof of concept sandwich estimation
+
 library(haven)
 library(bbmle)
 library(numDeriv)

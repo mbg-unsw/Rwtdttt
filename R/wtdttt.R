@@ -88,6 +88,15 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
 
+  # FIXME this code gives a false positive for models like "y~x+dlnorm(...)"
+
+  disttmp <- attr(terms(form, specials=c("dlnorm", "dweib", "dexp")), "specials")
+
+  dist <- if(length(disttmp$dlnorm) > 0 && disttmp$dlnorm==2) "lnorm"
+    else if(length(disttmp$dweib) > 0 && disttmp$dweib==2) "weib"
+    else if(length(disttmp$dexp) > 0 && disttmp$dexp==2) "exp"
+    else stop("model must use one of dlnorm, dweib or dexp")
+
   # parse 'parameters' to test if they match 'form', otherwise error
 
   # test if start, end are dates, error if a mix of types
@@ -95,8 +104,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # if start, end are dates and outcome is not, error
 
   # do continuity correction if required
-
-  # depending on distribution in use, calculate initial values (if not supplied)
 
   # id.colname <- deparse(substitute(id.colname))
 
@@ -119,7 +126,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
     stop("id colname is not in data")
   }
 
-
   # computing starting values
   event.date.colname <- deparse(substitute(event.date.colname))
   event.time.colname <- deparse(substitute(event.time.colname))
@@ -134,16 +140,30 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # do we want to generate a warning or an error?
   if(prp<0) warning("The proportion of incident users is a negative value")
 
-  lpinit <- qlogis(prp)
 
-  # muinit <- mean(log(obstime[obstime < 0.5 * delta]))
-  # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
+  # if the user hasn't supplied initial values, calculate some
 
-  muinit <- mean(log(data[, get(event.time.colname)][data[, get(event.time.colname)]< 0.5 * delta]))
-  lnsinit <- log(sd(log(data[, get(event.time.colname)][data[, get(event.time.colname)] < 0.5 * delta])))
+  if(is.null(init)) {
+    lpinit <- qlogis(prp)
+    if(dist == "lnorm") {
 
-  # lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
-  # lnalphainit <- 0
+      # muinit <- mean(log(obstime[obstime < 0.5 * delta]))
+      # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
+
+      muinit <- mean(log(data[, get(event.time.colname)][data[, get(event.time.colname)]< 0.5 * delta]))
+      lnsinit <- log(sd(log(data[, get(event.time.colname)][data[, get(event.time.colname)] < 0.5 * delta])))
+
+      init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit)
+    } else if(dist == "weib") {
+
+      # lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
+      # lnalphainit <- 0
+      # init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
+
+    } else if(dist == "dexp") {
+      # init <- list(logitp=lpinit, lnbeta=lnbetainit)
+    }
+  }
 
   # Redefining density functions to use the computed delta to scale
   # the function to be a proper density

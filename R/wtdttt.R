@@ -92,9 +92,9 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
 
   disttmp <- attr(terms(form, specials=c("dlnorm", "dweib", "dexp")), "specials")
 
-  dist <- if(length(disttmp$dlnorm) > 0 && disttmp$dlnorm==2) "lnorm"
-    else if(length(disttmp$dweib) > 0 && disttmp$dweib==2) "weib"
-    else if(length(disttmp$dexp) > 0 && disttmp$dexp==2) "exp"
+  dist <- if(isTRUE(disttmp$dlnorm==2)) "lnorm" # need isTRUE() as value can be NULL
+    else if(isTRUE(disttmp$dweib==2)) "weib"
+    else if(isTRUE(disttmp$dexp==2)) "exp"
     else stop("model must use one of dlnorm, dweib or dexp")
 
   # parse 'parameters' to test if they match 'form', otherwise error

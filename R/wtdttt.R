@@ -102,8 +102,10 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # test if start, end are dates, error if a mix of types
   # test if outcome variable is a date
   # if start, end are dates and outcome is not, error
+  # FIXME code currently assumes data are always dates and discrete not continuous
 
   # do continuity correction if required
+  # FIXME function definition currently includes no 'conttime' parameter
 
   # id.colname <- deparse(substitute(id.colname))
 
@@ -140,11 +142,11 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # do we want to generate a warning or an error?
   if(prp<0) warning("The proportion of incident users is a negative value")
 
+  lpinit <- qlogis(prp) # XXXX user cannot supply lpinit
 
   # if the user hasn't supplied initial values, calculate some
 
   if(is.null(init)) {
-    lpinit <- qlogis(prp)
     if(dist == "lnorm") {
 
       # muinit <- mean(log(obstime[obstime < 0.5 * delta]))
@@ -154,16 +156,21 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       lnsinit <- log(sd(log(data[, get(event.time.colname)][data[, get(event.time.colname)] < 0.5 * delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit)
+
     } else if(dist == "weib") {
 
-      # lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
-      # lnalphainit <- 0
-      # init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
+      lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
+      lnalphainit <- 0
+      init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
 
     } else if(dist == "dexp") {
-      # init <- list(logitp=lpinit, lnbeta=lnbetainit)
+
+      lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
+      init <- list(logitp=lpinit, lnbeta=lnbetainit)
+
     }
-  }
+  } else
+    init <- c(init, list(logitp=lpinit)) # merge our lpinit with user-supplied values
 
   # Redefining density functions to use the computed delta to scale
   # the function to be a proper density

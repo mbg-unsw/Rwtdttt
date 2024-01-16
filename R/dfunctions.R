@@ -9,6 +9,7 @@
 #'
 #' @return
 #' @export
+#' @importFrom stats pnorm
 #'
 #' @examples
 #'

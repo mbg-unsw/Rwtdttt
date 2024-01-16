@@ -9,6 +9,7 @@
 # Register a 'wtd' class, inheriting from 'mle2'
 # FIXME perhaps this belongs in a separate file
 
+#' @exportClass wtd
 setClass("wtd", contains="mle2")
 
 #' Create time variable
@@ -79,6 +80,9 @@ create_time_random <- function(event.date.colname, data, ...) {
 #' @param ... further arguments passed to other methods.
 #'
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
+#' @importFrom bbmle mle2
+#' @importFrom methods as
+#' @importFrom stats terms na.pass sd qlogis
 #' @export
 #'
 #' @examples
@@ -88,7 +92,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
 
-  # FIXME this code gives a false positive for models like "y~x+dlnorm(...)"
+  # FIXME this code gives a false positive for model formulae like "y~x+dlnorm(...)"
 
   disttmp <- attr(terms(form, specials=c("dlnorm", "dweib", "dexp")), "specials")
 
@@ -116,6 +120,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
     stop("data must be non-empty")
   }
 
+  # XXXX should id be optional? not required unless doing random index times I think
   if(is.null(id.colname)) {
     stop("id colname must be non-empty")
   }
@@ -128,6 +133,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
     stop("id colname is not in data")
   }
 
+  # XXXX we could use model.response() to get the response var name from 'form' instead
   # computing starting values
   event.date.colname <- deparse(substitute(event.date.colname))
   event.time.colname <- deparse(substitute(event.time.colname))
@@ -136,7 +142,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   delta <- as.double(end - start, units="days") + 1
   ntot <- nrow(data)
   # nonprevend <- sum(obstime > (delta * 2/3))
-  nonprevend <- sum(data[, get(event.time.colname)] > (delta * 2/3))
+  nonprevend <- sum(data[, event.time.colname] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
   # do we want to generate a warning or an error?
@@ -152,20 +158,21 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       # muinit <- mean(log(obstime[obstime < 0.5 * delta]))
       # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
 
-      muinit <- mean(log(data[, get(event.time.colname)][data[, get(event.time.colname)]< 0.5 * delta]))
-      lnsinit <- log(sd(log(data[, get(event.time.colname)][data[, get(event.time.colname)] < 0.5 * delta])))
+      # XXXX event.time.colname is a char vector, can use without 'get()' for indexing the data.frame
+      muinit <- mean(log(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta]))
+      lnsinit <- log(sd(log(data[, event.time.colname][data[, event.time.colname] < 0.5 * delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
+      lnbetainit <- log(1/(mean(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
 
     } else if(dist == "dexp") {
 
-      lnbetainit <- log(1/(mean(obstime[obstime < 0.5 * delta])))
+      lnbetainit <- log(1/(mean(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit)
 
     }

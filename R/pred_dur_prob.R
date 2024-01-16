@@ -1,3 +1,6 @@
+# Make sure wtd class definition is loaded first
+#' @include wtdttt.R
+
 #' Make WTD predictions
 #'
 #' Make predictions based on an estimated parametric Waiting Time Distribution
@@ -8,6 +11,7 @@
 #'
 #' @return A vector of predictions
 #' @export
+#' @importFrom stats pnorm pweibull pexp
 setMethod("predict", "wtd",
           function(object, newdata=NULL, type="dur", family = "lnorm", distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {

@@ -1,5 +1,8 @@
 # plot - R functions and documentation
 
+# Make sure wtd class definition is loaded first
+#' @include wtdttt.R
+
 #' Make WTD diagnostic plots
 #'
 #' Make diagnostic plots showing the fit of an estimated parametric Waiting Time
@@ -10,6 +13,7 @@
 #'
 #' @param wtd wtd object, typically result of wtdttt
 #' @export
+#' @importFrom graphics curve hist
 setMethod("plot", "wtd",
           function(object, x, y, ...) {
 

@@ -138,11 +138,18 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   event.date.colname <- deparse(substitute(event.date.colname))
   event.time.colname <- deparse(substitute(event.time.colname))
 
-  # obstime <- 0.5 + as.double(data[[event.date.colname]] - start, units="days")
   delta <- as.double(end - start, units="days") + 1
   ntot <- nrow(data)
+
+  # FIXME for now making a copy of 'data' and changing it
+  # XXXX this is where we could reverse things for the rWTD
+  # XXXX hard-coding continuity correction for now
+
+  cpy <- data
+  cpy[, event.time.colname] <- 0.5 + as.double(cpy[[event.time.colname]] - start, units="days")
+
   # nonprevend <- sum(obstime > (delta * 2/3))
-  nonprevend <- sum(data[, event.time.colname] > (delta * 2/3))
+  nonprevend <- sum(cpy[, event.time.colname] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
   # do we want to generate a warning or an error?
@@ -159,20 +166,20 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
 
       # XXXX event.time.colname is a char vector, can use without 'get()' for indexing the data.frame
-      muinit <- mean(log(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta]))
-      lnsinit <- log(sd(log(data[, event.time.colname][data[, event.time.colname] < 0.5 * delta])))
+      muinit <- mean(log(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta]))
+      lnsinit <- log(sd(log(cpy[, event.time.colname][cpy[, event.time.colname] < 0.5 * delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
 
     } else if(dist == "dexp") {
 
-      lnbetainit <- log(1/(mean(data[, event.time.colname][data[, event.time.colname]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit)
 
     }
@@ -190,8 +197,10 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   dexp <- function(x, logitp, lnbeta, log = TRUE)
     dexp(x, logitp, lnbeta, delta = delta, log)
 
+  # XXXX need to fix mle2() call so redefined density functions are in scope
+
   out <- mle2(form, parameters = parameters,
-              start = init, data = data)
+              start = init, data = cpy)
 
   as(out, "wtd") # need to store more things in the output object e.g. delta
 }

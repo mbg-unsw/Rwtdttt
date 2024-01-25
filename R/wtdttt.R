@@ -112,21 +112,21 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # define column names in data
   data.names <- names(data)
 
-  if(is.null(data) || (nrow(data)<1)) {
-    stop("data must be non-empty")
-  }
-
-  if(is.null(id.colname)) {
-    stop("id colname must be non-empty")
-  }
-
-  if(length(id.colname)>1) {
-    stop("id colname must be a single element")
-  }
-
-  if(!(id.colname %in% data.names)) {
-    stop("id colname is not in data")
-  }
+  # if(is.null(data) || (nrow(data)<1)) {
+  #   stop("data must be non-empty")
+  # }
+  #
+  # if(is.null(id.colname)) {
+  #   stop("id colname must be non-empty")
+  # }
+  #
+  # if(length(id.colname)>1) {
+  #   stop("id colname must be a single element")
+  # }
+  #
+  # if(!(id.colname %in% data.names)) {
+  #   stop("id colname is not in data")
+  # }
 
   # computing starting values
   event.date.colname <- deparse(substitute(event.date.colname))
@@ -172,19 +172,27 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   } else
     init <- c(init, list(logitp=lpinit)) # merge our lpinit with user-supplied values
 
+  ####################
+  # ! We cannot define a function within another one. We'll lose the the firt one and we could not call it.
+  #
+  # SOLUTION 1) include the dlnorm as an argument of the mle2 function and removing the argument from the calling of wtdttt (and extend to the other two cases)
+  #          2) include the same definition of delta given here (wtdttt) in the dlnorm function
+
+
   # Redefining density functions to use the computed delta to scale
   # the function to be a proper density
-  dlnorm <- function(x, logitp, mu, lnsigma, log = TRUE)
-    dlnorm(x, logitp, mu, lnsigma, delta = delta, log)
-
-  dweib <- function(x, logitp, lnalpha, lnbeta, log = TRUE)
-    dweib(x, logitp, lnalpha, lnbeta, delta = delta, log)
-
-  dexp <- function(x, logitp, lnbeta, log = TRUE)
-    dexp(x, logitp, lnbeta, delta = delta, log)
+  # dlnorm <- function(x, logitp, mu, lnsigma, log = TRUE)
+  #   dlnorm(x, logitp, mu, lnsigma, delta = delta, log)
+  #
+  # dweib <- function(x, logitp, lnalpha, lnbeta, log = TRUE)
+  #   dweib(x, logitp, lnalpha, lnbeta, delta = delta, log)
+  #
+  # dexp <- function(x, logitp, lnbeta, log = TRUE)
+  #   dexp(x, logitp, lnbeta, delta = delta, log)
 
   out <- mle2(form, parameters = parameters,
               start = init, data = data)
 
+  # return(out)
   as(out, "wtd") # need to store more things in the output object e.g. delta
 }

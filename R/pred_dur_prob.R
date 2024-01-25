@@ -18,16 +18,16 @@ setMethod("predict", "wtd",
               if(type=="dur") {
                 # Case with iadmean==FALSE
 
-                mu <- object@fullcoef[2]
-                lnsigma <- object@fullcoef[3]
+                mu <- object@fullcoef[1]
+                lnsigma <- object@fullcoef[2]
 
                 # out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
                 out <- exp(mu + .5 * exp(lnsigma)^2)
 
               } else if(type=="prob") {
 
-                mu <- object@fullcoef[2]
-                lnsigma <- object@fullcoef[3]
+                mu <- object@fullcoef[1]
+                lnsigma <- object@fullcoef[2]
 
                 out <- pnorm(-(log(distrx)-mu)/exp(lnsigma))
               }
@@ -38,15 +38,15 @@ setMethod("predict", "wtd",
               if(type=="dur") {
                 # Case with iadmean==FALSE
 
-                lnalpha <- object@fullcoef[2]
-                lnbeta <- object@fullcoef[3]
+                lnalpha <- object@fullcoef[1]
+                lnbeta <- object@fullcoef[2]
 
                 out <- (-log(1-quantile))^(1/exp(lnalpha))*exp(lnbeta)
 
               } else if(type=="prob") {
 
-                lnalpha <- object@fullcoef[2]
-                lnbeta <- object@fullcoef[3]
+                lnalpha <- object@fullcoef[1]
+                lnbeta <- object@fullcoef[2]
                 ### which is the shape?
                 out <- pweibull(-((distrx*exp(lnbeta))^exp(lnalpha)), shape = lnalpha)
               }
@@ -57,13 +57,13 @@ setMethod("predict", "wtd",
               if(type=="dur") {
                 # Case with iadmean==FALSE
 
-                lnbeta <- object@fullcoef[2]
+                lnbeta <- object@fullcoef[1]
 
                 out <- (-log(1-quantile))*exp(lnbeta)
 
               } else if(type=="prob") {
 
-                lnbeta <- object@fullcoef[2]
+                lnbeta <- object@fullcoef[1]
 
                 out <- pexp(-(distrx*exp(lnbeta)))
               }

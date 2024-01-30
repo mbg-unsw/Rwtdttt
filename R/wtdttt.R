@@ -116,23 +116,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # define column names in data
   data.names <- names(data)
 
-<<<<<<< HEAD
-  # if(is.null(data) || (nrow(data)<1)) {
-  #   stop("data must be non-empty")
-  # }
-  #
-  # if(is.null(id.colname)) {
-  #   stop("id colname must be non-empty")
-  # }
-  #
-  # if(length(id.colname)>1) {
-  #   stop("id colname must be a single element")
-  # }
-  #
-  # if(!(id.colname %in% data.names)) {
-  #   stop("id colname is not in data")
-  # }
-=======
   if(is.null(data) || (nrow(data)<1)) {
     stop("data must be non-empty")
   }
@@ -149,7 +132,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   if(!(id.colname %in% data.names)) {
     stop("id colname is not in data")
   }
->>>>>>> b539236ae40ff1341804ecef6612db7d7679c73c
 
   # XXXX we could use model.response() to get the response var name from 'form' instead
   # computing starting values
@@ -187,44 +169,26 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       muinit <- mean(log(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta]))
       lnsinit <- log(sd(log(cpy[, event.time.colname][cpy[, event.time.colname] < 0.5 * delta])))
 
-      init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit)
+      init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit, delta=delta)
 
     } else if(dist == "weib") {
 
       lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
       lnalphainit <- 0
-      init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit)
+      init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
     } else if(dist == "dexp") {
 
       lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
-      init <- list(logitp=lpinit, lnbeta=lnbetainit)
+      init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
 
     }
   } else
-    init <- c(init, list(logitp=lpinit)) # merge our lpinit with user-supplied values
+    init <- c(init, list(logitp=lpinit, delta=delta)) # merge our lpinit with user-supplied values
 
-  ####################
-  # ! We cannot define a function within another one. We'll lose the the firt one and we could not call it.
-  #
-  # SOLUTION 1) include the dlnorm as an argument of the mle2 function and removing the argument from the calling of wtdttt (and extend to the other two cases)
-  #          2) include the same definition of delta given here (wtdttt) in the dlnorm function
-
-
-  # Redefining density functions to use the computed delta to scale
-  # the function to be a proper density
-  # dlnorm <- function(x, logitp, mu, lnsigma, log = TRUE)
-  #   dlnorm(x, logitp, mu, lnsigma, delta = delta, log)
-  #
-  # dweib <- function(x, logitp, lnalpha, lnbeta, log = TRUE)
-  #   dweib(x, logitp, lnalpha, lnbeta, delta = delta, log)
-  #
-  # dexp <- function(x, logitp, lnbeta, log = TRUE)
-  #   dexp(x, logitp, lnbeta, delta = delta, log)
-
-  # XXXX need to fix mle2() call so redefined density functions are in scope
-
-  out <- mle2(form, parameters = parameters,
+  # FIXME this is very crude
+  form <- formula(gsub(")", ", delta)", deparse(form)))
+  out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
               start = init, data = cpy)
 
   # return(out)

@@ -15,7 +15,7 @@
 #'
 #'
 
-dlnorm <- function(x, logitp, mu, lnsigma, delta=365 , log = FALSE) {
+dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 
     prob <- exp(logitp) / (1 + exp(logitp))
     if(prob<0 | prob>1) stop("prob not between 0 and 1")

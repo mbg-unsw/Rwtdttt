@@ -10,16 +10,38 @@
 #'
 #' @param wtd wtd object, typically result of wtdttt
 #' @export
+#' @importFrom graphics hist curve
 setMethod("plot", "wtd",
           function(object, x, y, ...) {
 
-            logitp <- object@fullcoef[1]
-            mu <- object@fullcoef[2]
-            lnsigma <- object@fullcoef[3]
-
-            h <- hist(object@data$obstime, freq=F)
+            h <- hist(object@data[[object@depvar]], freq=F,
+                      main=object@dist, xlab=object@depvar)
             d <- h$breaks[2] - h$breaks[1]
-            curve(dlnorm(x, logitp, mu, lnsigma),
-                  from=0.1, to=max(object@data$obstime), add=T)
+
+            if(object@dist=="lnorm") {
+              logitp <- object@fullcoef[1]
+              mu <- object@fullcoef[2]
+              lnsigma <- object@fullcoef[3]
+
+              curve(dlnorm(x, logitp, mu, lnsigma, object@delta),
+                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
+            } else if(object@dist=="weib") {
+
+              logitp <- object@fullcoef[1]
+              lnalpha <- object@fullcoef[2]
+              lnbeta <- object@fullcoef[3]
+
+              curve(dweib(x, logitp, lnalpha, lnbeta, object@delta),
+                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
+
+            } else if(object@dist=="exp") {
+
+              logitp <- object@fullcoef[1]
+              lnbeta <- object@fullcoef[2]
+
+              curve(dexp(x, logitp, lnbeta, object@delta),
+                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
+
+            }
           })
 

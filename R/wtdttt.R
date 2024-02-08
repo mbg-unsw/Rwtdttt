@@ -10,7 +10,8 @@
 # FIXME perhaps this belongs in a separate file
 
 #' @exportClass wtd
-setClass("wtd", contains="mle2")
+setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
+                                         depvar="character"))
 
 #' Create time variable
 #'
@@ -135,6 +136,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
 
   # XXXX we could use model.response() to get the response var name from 'form' instead
   # computing starting values
+  # XXXX need Sabrina to explain how this is meant to work -- discuss
   event.date.colname <- deparse(substitute(event.date.colname))
   event.time.colname <- deparse(substitute(event.time.colname))
 
@@ -142,13 +144,16 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   ntot <- nrow(data)
 
   # FIXME for now making a copy of 'data' and changing it
-  # XXXX this is where we could reverse things for the rWTD
   # XXXX hard-coding continuity correction for now
 
   cpy <- data
-  cpy[, event.time.colname] <- 0.5 + as.double(cpy[[event.time.colname]] - start, units="days")
+  if(reverse)
+    cpy[, event.time.colname] <-
+     0.5 + as.double(end - cpy[[event.time.colname]], units="days")
+  else
+    cpy[, event.time.colname] <-
+      0.5 + as.double(cpy[[event.time.colname]] - start, units="days")
 
-  # nonprevend <- sum(obstime > (delta * 2/3))
   nonprevend <- sum(cpy[, event.time.colname] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
@@ -177,7 +182,7 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
-    } else if(dist == "dexp") {
+    } else if(dist == "exp") {
 
       lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
@@ -191,6 +196,9 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
               start = init, data = cpy)
 
-  # return(out)
-  as(out, "wtd") # need to store more things in the output object e.g. delta
+  out <- as(out, "wtd") # need to store more things in the output object e.g. delta
+  out@delta <- delta
+  out@dist <- dist
+  out@depvar <- event.time.colname
+  return(out)
 }

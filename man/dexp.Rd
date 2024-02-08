@@ -2,13 +2,21 @@
 % Please edit documentation in R/dfunctions.R
 \name{dexp}
 \alias{dexp}
-\title{Title}
+\title{The Exponential distribution}
 \usage{
-dexp(x, logitp, lnalpha, lnbeta, log = FALSE)
+dexp(x, logitp, lnbeta, delta = 1, log = FALSE)
 }
 \arguments{
-\item{log}{}
+\item{x}{vector of prescription redemption times}
+
+\item{logitp}{log-odds of being a prevalent user}
+
+\item{lnbeta}{log of beta (scale)}
+
+\item{delta}{XXXX}
+
+\item{log}{logical; if TRUE, probabilities p are given as log(p)}
 }
 \description{
-Title
+The Exponential distribution
 }

@@ -8,12 +8,13 @@
 #'
 #' @return A vector of predictions
 #' @export
+#' @importFrom stats pnorm pweibull pexp
 setMethod("predict", "wtd",
-          function(object, newdata=NULL, type="dur", family = "lnorm", distrx=NULL, quantile=0.8,
+          function(object, newdata=NULL, type="dur", distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
             # Lognormal distribution
-            if(family=="lnorm") {
+            if(object@dist=="lnorm") {
 
               if(type=="dur") {
                 # Case with iadmean==FALSE
@@ -33,7 +34,7 @@ setMethod("predict", "wtd",
               }
 
               # Weibull distribution
-            } else if(family=="weibull") {
+            } else if(object@dist=="weib") {
 
               if(type=="dur") {
                 # Case with iadmean==FALSE
@@ -52,7 +53,7 @@ setMethod("predict", "wtd",
               }
 
               # Exponential distribution
-            } else if(family=="exp") {
+            } else if(object@dist=="exp") {
 
               if(type=="dur") {
                 # Case with iadmean==FALSE
@@ -69,7 +70,6 @@ setMethod("predict", "wtd",
               }
 
             }
-
 
             out
           })

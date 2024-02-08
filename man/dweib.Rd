@@ -2,13 +2,23 @@
 % Please edit documentation in R/dfunctions.R
 \name{dweib}
 \alias{dweib}
-\title{Title}
+\title{The Weibull distribution}
 \usage{
-dweib(x, logitp, lnalpha, lnbeta, log = FALSE)
+dweib(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE)
 }
 \arguments{
-\item{log}{}
+\item{x}{vector of prescription redemption times}
+
+\item{logitp}{log-odds of being a prevalent user}
+
+\item{lnalpha}{log of alpha (shape)}
+
+\item{lnbeta}{log of beta (scale)}
+
+\item{delta}{XXXX}
+
+\item{log}{logical; if TRUE, probabilities p are given as log(p)}
 }
 \description{
-Title
+The Weibull distribution
 }

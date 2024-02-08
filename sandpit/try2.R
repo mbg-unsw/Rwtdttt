@@ -19,3 +19,33 @@ fit1 <- wtdttt(data = df,
 
 
 summary(fit1)
+
+plot(fit1)
+
+# repeat with Weibull
+fit2 <- wtdttt(data = df,
+               rx1time ~ dweib(logitp, lnalpha, lnbeta),
+               event.date.colname = rx1time,
+               event.time.colname = rx1time,
+               id.colname = "pid",
+               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
+)
+
+
+summary(fit2)
+plot(fit2)
+
+# ... and with Exponential
+fit3 <- wtdttt(data = df,
+               rx1time ~ dexp(logitp, lnbeta),
+               event.date.colname = rx1time,
+               event.time.colname = rx1time,
+               id.colname = "pid",
+               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
+)
+
+
+summary(fit3)
+
+plot(fit3)
+

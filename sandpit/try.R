@@ -17,9 +17,10 @@ df_2 <- create_time(data = df, event.date.colname = rx1time, start = as.Date('20
 fit1 <- wtdttt(data = df_2,
                obstime ~ dlnorm(logitp, mu, lnsigma),
                event.date.colname = rx1time,
-               event.time.colname = obstime,
+               event.time.colname = rx1time,
                start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
-               init = list(mu = 4.23, lnsigma = -1.26),
+               # init = list(mu = 4.23, lnsigma = -1.26),
+               id.colname = "pid"
                )
 
 ###### ERROR
@@ -51,6 +52,8 @@ plot(fit1)
 # create sampling window and define a random index date for each individual
 set.seed(84)
 
+######### if reverse==F
+
 df_r <- df %>%
        mutate(r_index_date = sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(df), replace=T),
               obstime = as.numeric(rx1time - r_index_date))
@@ -58,6 +61,26 @@ df_r <- df %>%
 # remove dispensations not within the observation window
 df_sel <- df_r %>%
        filter(obstime>=0)
+
+# keep only the first dispensation, by id
+df_f <- df_sel %>%
+            group_by(pid) %>%
+            slice_min(rx1time)
+
+######### if reverse==T
+
+df_r <- df %>%
+  mutate(r_index_date = sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(df), replace=T),
+         obstime = as.numeric(rx1time - r_index_date))
+
+# remove dispensations not within the observation window
+df_sel <- df_r %>%
+  filter(obstime>=0)
+
+# keep only the first dispensation, by id
+df_f <- df_sel %>%
+  group_by(pid) %>%
+  slice_min(rx1time)
 
 ########## ERROR
 # i) if init values provided:

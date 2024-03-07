@@ -1,5 +1,9 @@
 # plot - R functions and documentation
 
+# make sure class definition is listed first in DESCRIPTION Collate:
+#' @include wtd-class.R
+NULL
+
 #' Make WTD diagnostic plots
 #'
 #' Make diagnostic plots showing the fit of an estimated parametric Waiting Time

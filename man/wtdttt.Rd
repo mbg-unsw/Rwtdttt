@@ -8,12 +8,10 @@ wtdttt(
   data,
   form,
   parameters = NULL,
-  id.colname = NA,
-  event.date.colname = NA,
-  event.time.colname = NA,
   start = NA,
   end = NA,
   reverse = F,
+  id = NA,
   subset = NA,
   na.action = na.pass,
   init = NULL,
@@ -31,13 +29,15 @@ typically the environment from which wtdttt is called.}
 class): a symbolic description of the model to be fitted. The details of the
 model specification are given under 'Details'}
 
-\item{parameters}{model formulae for distribution parameters}
+\item{parameters}{optional model formulae for distribution parameters}
 
-\item{start}{start of observation window}
+\item{start}{start of observation window (date or real number)}
 
-\item{end}{end of observation window}
+\item{end}{end of observation window (date or real number)}
 
-\item{reverse}{logical; Fit the reverse waiting time distribution.}
+\item{reverse}{logical; Fit the reverse waiting time distribution (default F).}
+
+\item{id}{name of the id variable (optional)}
 
 \item{subset}{an optional vector specifying a subset of observations to be
 used in the fitting process.}
@@ -63,3 +63,28 @@ adjustment for covariates. Reports estimates of prevalence fraction
 and specified percentile of inter-arrival density together with
 regression coefficients.
 }
+\section{Model formula}{
+
+The model formula \code{form} follows the pattern \code{obstime ~ dist(alpha, beta, gamma)}
+with
+\itemize{
+\item \code{obstime}: the redemption time variable (date or real number)
+\item \code{dist}: the parametric distribution for the forward or backward recurrence
+density (FRD/BRD), which must be \code{dexp()}, \code{dweib()} or \code{dlnorm()}
+i.e named after their corresponding interarrival density (IAD).
+}
+}
+
+\section{Data format}{
+
+The WTD is fit to the first prescription redemption of each
+individual within an observation window (ordinary WTD), or the last
+(reverse WTD), respectively.
+
+You may prepare the data to this format, or optionally specify the name of
+an \code{id} variable to select the first or last redemption automatically.
+
+If the redemption time data are of type date, a continuity correction will be
+applied automatically.
+}
+

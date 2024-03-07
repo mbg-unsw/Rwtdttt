@@ -58,7 +58,7 @@ possible value is NULL, no action. Value na.exclude can be useful.}
 wtdttt returns an object of class "wtd" inheriting from "mle".
 }
 \description{
-`ranwtdttt()` estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
+\code{ranwtdttt()} estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
 based on observed prescription redemptions with adjustment for covariates
 using one or more random index times for each individual. Reports estimates
 of prevalence fraction and specified percentile of inter-arrival density

@@ -1,53 +1,27 @@
 # wtdttt - R functions and documentation
 
-# Libraries are loaded via "Imports" in DESCRIPTION
-# library(bbmle)
-# library(class)
-#' @importClassesFrom bbmle mle2
-#'
+# make sure class definition is listed first in DESCRIPTION Collate:
+#' @include wtd-class.R
+NULL
 
-# Register a 'wtd' class, inheriting from 'mle2'
-# FIXME perhaps this belongs in a separate file
-
-#' @exportClass wtd
-setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
-                                         depvar="character"))
-
-#' Create time variable
-#'
-#' @param event.date.colname
-#' @param data
-#' @param start
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
-create_time <- function(event.date.colname, data, start, ...) {
-
-  event.date.colname <- deparse(substitute(event.date.colname))
-  data[,obstime := as.numeric(0.5 + get(event.date.colname) - start)]
-
-}
-
-create_time_random <- function(event.date.colname, data, ...) {
-
-  event.date.colname <- deparse(substitute(event.date.colname))
-  # index.date.colname <- deparse(substitute(index.date.colname))
-
-  data[,r_index_date := sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(data), replace = T)]
-  data[,obstime := as.numeric(0.5 + get(event.date.colname) - r_index_date)]
-
-}
+# create_time <- function(event.date.colname, data, start, ...) {
+#
+#   event.date.colname <- deparse(substitute(event.date.colname))
+#   data[,obstime := as.numeric(0.5 + get(event.date.colname) - start)]
+#
+# }
+#
+# create_time_random <- function(event.date.colname, data, ...) {
+#
+#   event.date.colname <- deparse(substitute(event.date.colname))
+#   # index.date.colname <- deparse(substitute(index.date.colname))
+#
+#   data[,r_index_date := sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(data), replace = T)]
+#   data[,obstime := as.numeric(0.5 + get(event.date.colname) - r_index_date)]
+#
+# }
 
 #########################################################
-
-# Trying to implement pre-processing code in the function
-
-# Is it acceptable to modify the R landscape, creating a new variable within the data.frame or even a numerical vector?
-# It is fine for all numerical objects (delta, ntot, etc.) because we create them within the function, use them, but not return them. They will never come up in the environment
-# PROBLEM with obstime
 
 #' Fit Waiting Time Distribution
 #'
@@ -57,19 +31,38 @@ create_time_random <- function(event.date.colname, data, ...) {
 #' and specified percentile of inter-arrival density together with
 #' regression coefficients.
 #'
+#' @section Model formula:
+#' The model formula `form` follows the pattern `obstime ~ dist(alpha, beta, gamma)`
+#' with
+#'
+#' * `obstime`: the redemption time variable (date or real number)
+#' * `dist`: the parametric distribution for the forward or backward recurrence
+#' density (FRD/BRD), which must be `dexp()`, `dweib()` or `dlnorm()`
+#' i.e named after their corresponding interarrival density (IAD).
+#'
+#' @section Data format:
+#' The WTD is fit to the first prescription redemption of each
+#' individual within an observation window (ordinary WTD), or the last
+#' (reverse WTD), respectively.
+#'
+#' You may prepare the data to this format, or optionally specify the name of
+#' an `id` variable to select the first or last redemption automatically.
+#'
+#' If the redemption time data are of type date, a continuity correction will be
+#' applied automatically.
+#'
 #' @param form an object of class "formula" (or one that can be coered to that
 #' class): a symbolic description of the model to be fitted. The details of the
 #' model specification are given under 'Details'
-#' @param parameters model formulae for distribution parameters
+#' @param parameters optional model formulae for distribution parameters
 #' @param data an optional data frame, list or environment (or object coercible
 #' by as.data.frame to a data frame) containing the variables in the model. If
 #' not found in data, the variables are taken from environment(formula),
 #' typically the environment from which wtdttt is called.
-#' @param event.date.colname
-#' @param event.time.colname
-#' @param start start of observation window
-#' @param end end of observation window
-#' @param reverse logical; Fit the reverse waiting time distribution.
+#' @param start start of observation window (date or real number)
+#' @param end end of observation window (date or real number)
+#' @param reverse logical; Fit the reverse waiting time distribution (default F).
+#' @param id name of the id variable (optional)
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process.
 #' @param na.action a function which indicates what should happen when the data
@@ -83,11 +76,11 @@ create_time_random <- function(event.date.colname, data, ...) {
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom bbmle mle2
 #' @importFrom methods as
-#' @importFrom stats terms na.pass sd qlogis
+#' @importFrom stats terms na.pass sd qlogis formula
 #' @export
 #'
 #' @examples
-wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colname=NA, event.time.colname=NA, start=NA, end=NA, reverse=F,
+wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                    subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
 
   # parse 'form' to determine the distribution in use and test if it
@@ -112,8 +105,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   # do continuity correction if required
   # FIXME function definition currently includes no 'conttime' parameter
 
-  # id.colname <- deparse(substitute(id.colname))
-
   # define column names in data
   data.names <- names(data)
 
@@ -121,40 +112,37 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
     stop("data must be non-empty")
   }
 
-  # XXXX should id be optional? not required unless doing random index times I think
-  if(is.null(id.colname)) {
-    stop("id colname must be non-empty")
+  obs.name <- all.vars(form)[1]
+
+  if(is.null(obs.name)) {
+    stop("obstime variable must be specified")
   }
 
-  if(length(id.colname)>1) {
-    stop("id colname must be a single element")
+  # if(length(id.colname)>1) {
+  #   stop("id colname must be a single element")
+  # }
+
+  if(!(obs.name %in% data.names)) {
+    stop(paste0("'", obs.name, "'", "is not in data"))
   }
 
-  if(!(id.colname %in% data.names)) {
-    stop("id colname is not in data")
-  }
-
-  # XXXX we could use model.response() to get the response var name from 'form' instead
-  # computing starting values
-  # XXXX need Sabrina to explain how this is meant to work -- discuss
-  event.date.colname <- deparse(substitute(event.date.colname))
-  event.time.colname <- deparse(substitute(event.time.colname))
-
+  # FIXME check the data type of the obs.name and only convert if a date
   delta <- as.double(end - start, units="days") + 1
   ntot <- nrow(data)
 
   # FIXME for now making a copy of 'data' and changing it
-  # XXXX hard-coding continuity correction for now
+  # XXXX hard-coding continuity correction for now, should not apply if data
+  # are real numbers and not dates
 
   cpy <- data
   if(reverse)
-    cpy[, event.time.colname] <-
-     0.5 + as.double(end - cpy[[event.time.colname]], units="days")
+    cpy[, obs.name] <-
+     0.5 + as.double(end - cpy[[obs.name]], units="days")
   else
-    cpy[, event.time.colname] <-
-      0.5 + as.double(cpy[[event.time.colname]] - start, units="days")
+    cpy[, obs.name] <-
+      0.5 + as.double(cpy[[obs.name]] - start, units="days")
 
-  nonprevend <- sum(cpy[, event.time.colname] > (delta * 2/3))
+  nonprevend <- sum(cpy[, obs.name] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
   # do we want to generate a warning or an error?
@@ -171,20 +159,20 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
       # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
 
       # XXXX event.time.colname is a char vector, can use without 'get()' for indexing the data.frame
-      muinit <- mean(log(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta]))
-      lnsinit <- log(sd(log(cpy[, event.time.colname][cpy[, event.time.colname] < 0.5 * delta])))
+      muinit <- mean(log(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta]))
+      lnsinit <- log(sd(log(cpy[, obs.name][cpy[, obs.name] < 0.5 * delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit, delta=delta)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
     } else if(dist == "exp") {
 
-      lnbetainit <- log(1/(mean(cpy[, event.time.colname][cpy[, event.time.colname]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
 
     }
@@ -199,6 +187,6 @@ wtdttt <- function(data, form, parameters=NULL, id.colname=NA, event.date.colnam
   out <- as(out, "wtd") # need to store more things in the output object e.g. delta
   out@delta <- delta
   out@dist <- dist
-  out@depvar <- event.time.colname
+  out@depvar <- obs.name
   return(out)
 }

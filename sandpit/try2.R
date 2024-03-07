@@ -1,20 +1,16 @@
-# Quick test that new way of setting up delta works
-
-library(data.table)
-library(tidyverse)
-library(haven)
+# Quick test
+#
 library(bbmle)
+library(Rwtdttt)
+library(haven)
 
 # load data
-df <- haven::read_dta("data/wtddat_dates.dta")
+df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
 
 # fit waiting time distribution
 fit1 <- wtdttt(data = df,
                rx1time ~ dlnorm(logitp, mu, lnsigma),
-               event.date.colname = rx1time,
-               event.time.colname = rx1time,
-               id.colname = "pid",
-               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
+                start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
                )
 
 
@@ -25,10 +21,7 @@ plot(fit1)
 # repeat with Weibull
 fit2 <- wtdttt(data = df,
                rx1time ~ dweib(logitp, lnalpha, lnbeta),
-               event.date.colname = rx1time,
-               event.time.colname = rx1time,
-               id.colname = "pid",
-               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
+                start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
 )
 
 
@@ -38,9 +31,6 @@ plot(fit2)
 # ... and with Exponential
 fit3 <- wtdttt(data = df,
                rx1time ~ dexp(logitp, lnbeta),
-               event.date.colname = rx1time,
-               event.time.colname = rx1time,
-               id.colname = "pid",
                start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
 )
 

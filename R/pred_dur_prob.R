@@ -1,3 +1,9 @@
+# predictions using wtd class
+
+# make sure class definition is listed first in DESCRIPTION Collate:
+#' @include wtd-class.R
+NULL
+
 #' Make WTD predictions
 #'
 #' Make predictions based on an estimated parametric Waiting Time Distribution

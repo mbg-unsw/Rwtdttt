@@ -21,7 +21,8 @@ Imports:
     haven,
     methods,
     graphics,
-    stats
+    stats,
+    numDeriv
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -35,4 +36,5 @@ Collate:
     'plot.R'
     'pred_dur_prob.R'
     'ranwtdttt.R'
+    'sandwich.R'
     'wtdttt.R'

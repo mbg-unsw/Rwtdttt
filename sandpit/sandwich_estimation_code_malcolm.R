@@ -5,7 +5,7 @@ library(bbmle)
 library(numDeriv)
 
 
-tmp <- read_dta("data/score_ex.dta")
+tmp <- read_dta("inst/extdata/score_ex.dta")
 
 tmp$packcat <- factor(tmp$packsize)
 

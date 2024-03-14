@@ -188,5 +188,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
+  out@idvar <- id
   return(out)
 }

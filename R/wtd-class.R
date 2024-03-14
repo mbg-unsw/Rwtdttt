@@ -5,10 +5,11 @@
 #' @slot delta
 #' @slot dist
 #' @slot depvar
+#' @slot idvar
 #'
 #' @exportClass wtd
 #' @importClassesFrom bbmle mle2
 #'
 setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
-                                         depvar="character"))
+                                         depvar="character", idvar="character"))
 

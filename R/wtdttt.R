@@ -83,6 +83,17 @@ NULL
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                    subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
 
+  obs.name <- all.vars(form)[1]
+
+  if (length(unique(data[, get(id)]))==dim(data)[1]) {
+    data <- data
+  } else if (length(unique(data[, get(id)]))!=dim(data)[1] & reverse==FALSE) {
+    # data[, new_date := first(get(obs.name)), by = get(id)]
+    data <- data[, .SD[which.min(get(obs.name))], by = get(id)]
+  # } else data[, new_date := data.table::last(get(obs.name)), by = get(id)]
+  } else data <- data[, .SD[which.max(get(obs.name))], by = get(id)]
+
+
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
 
@@ -112,7 +123,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     stop("data must be non-empty")
   }
 
-  obs.name <- all.vars(form)[1]
 
   if(is.null(obs.name)) {
     stop("obstime variable must be specified")
@@ -188,6 +198,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
-  out@idvar <- id
+  # out@idvar <- id
   return(out)
 }

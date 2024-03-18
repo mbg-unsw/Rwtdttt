@@ -83,15 +83,28 @@ NULL
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                    subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
 
+  cpy <- as.data.table(data)
+
   obs.name <- all.vars(form)[1]
 
-  if (length(unique(data[, get(id)]))==dim(data)[1]) {
-    data <- data
-  } else if (length(unique(data[, get(id)]))!=dim(data)[1] & reverse==FALSE) {
-    # data[, new_date := first(get(obs.name)), by = get(id)]
-    data <- data[, .SD[which.min(get(obs.name))], by = get(id)]
-  # } else data[, new_date := data.table::last(get(obs.name)), by = get(id)]
-  } else data <- data[, .SD[which.max(get(obs.name))], by = get(id)]
+  # if (length(unique(cpy[, get(id)]))==dim(cpy)[1]) {
+  #   data <- data
+  # } else if (length(unique(data[, get(id)]))!=dim(data)[1] & reverse==FALSE) {
+  #   # data[, new_date := first(get(obs.name)), by = get(id)]
+  #   data <- data[, .SD[which.min(get(obs.name))], by = get(id)]
+  # # } else data[, new_date := data.table::last(get(obs.name)), by = get(id)]
+  # } else data <- data[, .SD[which.max(get(obs.name))], by = get(id)]
+
+  if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
+
+    cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
+
+  } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
+
+    cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
+
+  }
+
 
 
   # parse 'form' to determine the distribution in use and test if it
@@ -117,9 +130,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   # FIXME function definition currently includes no 'conttime' parameter
 
   # define column names in data
-  data.names <- names(data)
+  data.names <- names(cpy)
 
-  if(is.null(data) || (nrow(data)<1)) {
+  if(is.null(cpy) || (nrow(cpy)<1)) {
     stop("data must be non-empty")
   }
 
@@ -138,22 +151,35 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   # FIXME check the data type of the obs.name and only convert if a date
   delta <- as.double(end - start, units="days") + 1
-  ntot <- nrow(data)
+  ntot <- nrow(cpy)
 
   # FIXME for now making a copy of 'data' and changing it
   # XXXX hard-coding continuity correction for now, should not apply if data
   # are real numbers and not dates
 
-  cpy <- data
-  if(reverse)
-    cpy[, obs.name] <-
-     0.5 + as.double(end - cpy[[obs.name]], units="days")
-  else
-    cpy[, obs.name] <-
-      0.5 + as.double(cpy[[obs.name]] - start, units="days")
 
-  nonprevend <- sum(cpy[, obs.name] > (delta * 2/3))
+  if(reverse) {
+
+    cpy[, obs.time := 0.5 + as.double(end - get(obs.name), units="days")]
+
+    cpy <- cpy[,(obs.name):=NULL]
+    setnames(cpy, "obs.time", obs.name)
+
+
+  } else {
+
+    cpy[, obs.time := 0.5 + as.double(get(obs.name) - start, units="days")]
+
+    cpy <- cpy[,(obs.name):=NULL]
+    setnames(cpy, "obs.time", obs.name)
+
+  }
+
+  # should be calculate the proportion in a different way according to reverse parameter?
+  nonprevend <- sum(cpy[, get(obs.name)] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
+
+
 
   # do we want to generate a warning or an error?
   if(prp<0) warning("The proportion of incident users is a negative value")
@@ -169,20 +195,20 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
 
       # XXXX event.time.colname is a char vector, can use without 'get()' for indexing the data.frame
-      muinit <- mean(log(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta]))
-      lnsinit <- log(sd(log(cpy[, obs.name][cpy[, obs.name] < 0.5 * delta])))
+      muinit <- mean(log(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta]))
+      lnsinit <- log(sd(log(cpy[, get(obs.name)][cpy[, get(obs.name)] < 0.5 * delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit, delta=delta)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
     } else if(dist == "exp") {
 
-      lnbetainit <- log(1/(mean(cpy[, obs.name][cpy[, obs.name]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
 
     }
@@ -198,6 +224,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
-  # out@idvar <- id
+  out@idvar <- id
   return(out)
 }

@@ -33,7 +33,46 @@
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
 #' @export
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
-                      nsamp=1, subset, na.action=na.pass, init, control=NULL, ...) {
+                      nsamp=4, subset, na.action=na.pass, init, control=NULL, ...) {
+
+  # (to be modified, just to try) initializing an empty dataframe
+  tmp <- data.table(pid = character(),
+                    rxdate = as.Date(as.character()),
+                    indda = as.Date(as.character()),
+                    rxshift = as.Date(as.character()))
+
+  # for loop to implement the multiple random index date
+  for (i in 1:nsamp) {
+
+  set.seed(84)
+
+  obs.name <- all.vars(form)[1]
+
+  delta <- as.numeric(end - start)
+
+  if (!reverse) {
+
+    data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= indda + delta,][, .SD[which.min(get(obs.name))], by = id][, rxshift := get(obs.name) - (indda-start)]
+
+    # browser()
+
+  } else {
+
+    # adatto come sopra (reverse=F)
+    setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= indda - delta][, .SD[which.max(get(obs.name))], by = get(id)][, rxshift := get(obs.name) + end - indda]
+
+  }
+
+  # bind multiple copies of dataframe
+  tmp <- rbind(tmp, data)
+
+}
+
+  out <- tmp
+  # out <- data
+  # out <- wtdttt(data, form)
+
+  return(out)
 
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error

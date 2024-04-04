@@ -35,6 +35,6 @@ Collate:
     'wtd-class.R'
     'plot.R'
     'pred_dur_prob.R'
+    'wtdttt.R'
     'ranwtdttt.R'
     'sandwich.R'
-    'wtdttt.R'

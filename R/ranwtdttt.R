@@ -1,5 +1,8 @@
 # ranwtdttt - R functions and documentation
 
+#' @include wtd-class.R wtdttt.R
+NULL
+
 #' Fit Waiting Time Distribution with random index times
 #'
 #' `ranwtdttt()` estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
@@ -20,6 +23,7 @@
 #' @param start start of observation window
 #' @param end end of observation window
 #' @param reverse logical; Fit the reverse waiting time distribution.
+#' @param nsamp number of samples to take.
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process.
 #' @param na.action a function which indicates what should happen when the data
@@ -31,6 +35,7 @@
 #' @param ... further arguments passed to other methods.
 #'
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
+#' @importFrom data.table data.table setDT := .N .SD as.data.table setnames
 #' @export
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
                       nsamp=4, subset, na.action=na.pass, init, control=NULL, ...) {

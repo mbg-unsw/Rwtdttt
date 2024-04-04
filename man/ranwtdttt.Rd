@@ -12,7 +12,7 @@ ranwtdttt(
   start,
   end,
   reverse = F,
-  nsamp = 1,
+  nsamp = 4,
   subset,
   na.action = na.pass,
   init,
@@ -39,6 +39,8 @@ typically the environment from which wtdttt is called.}
 \item{end}{end of observation window}
 
 \item{reverse}{logical; Fit the reverse waiting time distribution.}
+
+\item{nsamp}{number of samples to take.}
 
 \item{subset}{an optional vector specifying a subset of observations to be
 used in the fitting process.}

@@ -28,8 +28,6 @@ setMethod("predict", "wtd",
                 mu <- object@fullcoef[2]
                 lnsigma <- object@fullcoef[3]
 
-                browser()
-
                 # out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
                 out <- exp(mu + .5 * exp(lnsigma)^2)
 

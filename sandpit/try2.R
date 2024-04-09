@@ -1,5 +1,5 @@
 # Quick test
-#
+
 library(bbmle)
 library(Rwtdttt)
 library(haven)
@@ -19,6 +19,8 @@ fit1 <- wtdttt(data = df,
 summary(fit1)
 
 plot(fit1)
+
+predict(fit1)
 
 # repeat with Weibull
 fit2 <- wtdttt(data = df,
@@ -41,3 +43,25 @@ summary(fit3)
 
 plot(fit3)
 
+# Try on Jesper fake data (period: 02/01/95 - 31/08/22; drugs: clopidogrel, human insulin, metformin) ----
+
+# load data
+df <- haven::read_dta(system.file("extdata", "drugpakud.dta", package="Rwtdttt"))
+
+# filter clopidogrel dispensations
+df <- df %>%
+       filter(atc=="B01AC04")
+
+# fit waiting time distribution
+fit4 <- wtdttt(data = df,
+               rxdate ~ dlnorm(logitp, mu, lnsigma),
+               id = "id",
+               start = as.Date('2015-01-01'), end = as.Date('2015-12-31')
+)
+
+
+summary(fit4)
+
+plot(fit4)
+
+predict(fit4)

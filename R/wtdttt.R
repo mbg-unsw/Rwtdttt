@@ -87,6 +87,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   obs.name <- all.vars(form)[1]
 
+  # FIXME should we remove any observations that fall outside start ... end
+  #       or just flag an error?
+
   # if (length(unique(cpy[, get(id)]))==dim(cpy)[1]) {
   #   data <- data
   # } else if (length(unique(data[, get(id)]))!=dim(data)[1] & reverse==FALSE) {
@@ -95,17 +98,26 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   # # } else data[, new_date := data.table::last(get(obs.name)), by = get(id)]
   # } else data <- data[, .SD[which.max(get(obs.name))], by = get(id)]
 
-  if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
+  if(!is.na(id)) {
 
-    cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
+    if(length(id)>1) {
+      stop("id colname must be a single element")
+    }
 
-  } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
+    if(!(id %in% names(cpy))) {
+      stop(paste0("'", id, "'", "is not in data"))
+    }
 
-    cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
+    if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
 
+      cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
+
+    } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
+
+      cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
+
+    }
   }
-
-
 
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
@@ -140,10 +152,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   if(is.null(obs.name)) {
     stop("obstime variable must be specified")
   }
-
-  # if(length(id.colname)>1) {
-  #   stop("id colname must be a single element")
-  # }
 
   if(!(obs.name %in% data.names)) {
     stop(paste0("'", obs.name, "'", "is not in data"))
@@ -224,6 +232,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
-  out@idvar <- id
+  out@idvar <- if(is.na(id)) character(0) else id
   return(out)
 }

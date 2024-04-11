@@ -6,6 +6,7 @@ library(haven)
 library(data.table)
 
 # load data
+# Dataset contains one observation per person, first dispensing for 2014
 df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
 
 # fit waiting time distribution
@@ -23,6 +24,8 @@ plot(fit1)
 predict(fit1)
 
 # repeat with Weibull
+# can omit the "id" parameter as the data are pre-processed
+
 fit2 <- wtdttt(data = df,
                rx1time ~ dweib(logitp, lnalpha, lnbeta),
                 start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),

@@ -133,21 +133,12 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   # parse 'parameters' to test if they match 'form', otherwise error
 
-  # test if start, end are dates, error if a mix of types
-  # test if outcome variable is a date
-  # if start, end are dates and outcome is not, error
-  # FIXME code currently assumes data are always dates and discrete not continuous
-
-  # do continuity correction if required
-  # FIXME function definition currently includes no 'conttime' parameter
-
   # define column names in data
   data.names <- names(cpy)
 
   if(is.null(cpy) || (nrow(cpy)<1)) {
     stop("data must be non-empty")
   }
-
 
   if(is.null(obs.name)) {
     stop("obstime variable must be specified")
@@ -157,18 +148,31 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     stop(paste0("'", obs.name, "'", "is not in data"))
   }
 
-  # FIXME check the data type of the obs.name and only convert if a date
-  delta <- as.double(end - start, units="days") + 1
+  # Check if the user provided dates (discrete) or numbers (continuous)
+  # XXXX do we need to record this in the fit object?
+  # XXXX function definition currently includes no 'conttime' parameter
+
+  if(class(cpy[[obs.name]])=="Date" && class(start)=="Date" && class(end)=="Date")
+    conttime <- 0
+  else if(class(cpy[[obs.name]])=="numeric" && class(start)=="numeric" && class(end)=="numeric")
+    conttime <- 1
+  else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
+
+  if(!conttime)
+    delta <- as.double(end - start, units="days") + 1
+  else
+    delta <- end - start
+
   ntot <- nrow(cpy)
 
   # FIXME for now making a copy of 'data' and changing it
-  # XXXX hard-coding continuity correction for now, should not apply if data
-  # are real numbers and not dates
-
 
   if(reverse) {
 
-    cpy[, obs.time := 0.5 + as.double(end - get(obs.name), units="days")]
+    if(!conttime)
+      cpy[, obs.time := 0.5 + as.double(end - get(obs.name), units="days")]
+    else
+      cpy[, obs.time := end - get(obs.name)]
 
     cpy <- cpy[,(obs.name):=NULL]
     setnames(cpy, "obs.time", obs.name)
@@ -176,7 +180,10 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   } else {
 
-    cpy[, obs.time := 0.5 + as.double(get(obs.name) - start, units="days")]
+    if(!conttime)
+      cpy[, obs.time := 0.5 + as.double(get(obs.name) - start, units="days")]
+    else
+      cpy[, obs.time := get(obs.name) - start]
 
     cpy <- cpy[,(obs.name):=NULL]
     setnames(cpy, "obs.time", obs.name)
@@ -184,10 +191,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   }
 
   # should be calculate the proportion in a different way according to reverse parameter?
+  # [no, it's OK according to wtdttt.ado - Malcolm]
   nonprevend <- sum(cpy[, get(obs.name)] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
-
-
 
   # do we want to generate a warning or an error?
   if(prp<0) warning("The proportion of incident users is a negative value")
@@ -199,10 +205,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   if(is.null(init)) {
     if(dist == "lnorm") {
 
-      # muinit <- mean(log(obstime[obstime < 0.5 * delta]))
-      # lnsinit <- log(sd(log(obstime[obstime < 0.5 * delta])))
-
-      # XXXX event.time.colname is a char vector, can use without 'get()' for indexing the data.frame
       muinit <- mean(log(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta]))
       lnsinit <- log(sd(log(cpy[, get(obs.name)][cpy[, get(obs.name)] < 0.5 * delta])))
 
@@ -228,7 +230,7 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
               start = init, data = cpy)
 
-  out <- as(out, "wtd") # need to store more things in the output object e.g. delta
+  out <- as(out, "wtd")
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name

@@ -15,6 +15,7 @@ sand_vcov <- function(fit) {
 
 #####
 # based on code from bbmle::calc_mle2_function
+# FIXME: painfully slow
 # FIXME: redo without special case code for each density type
 # FIXME: redo to handle non-standard parameter naming
 

@@ -11,7 +11,7 @@
 #' @examples
 sand_vcov <- function(fit) {
   # parse model formula components
-  parm_form <- unlist(strsplit(gsub(unlist(strsplit(fit@formula, ":", fixed=T))[2], " ", ""), ",", fixed=T))
+  parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(fit@formula, ":", fixed=T))[2]), ",", fixed=T))
 
 #####
 # based on code from bbmle::calc_mle2_function
@@ -19,12 +19,12 @@ sand_vcov <- function(fit) {
 # FIXME: redo without special case code for each density type
 # FIXME: redo to handle non-standard parameter naming
 
-  parnames <- names(fit@call$start)
+  parnames <- grep("delta", names(fit@call$start), value=T, fixed=T, invert=T)
 
-  if (!is.na(parm_form) && length(parm_form)>0) {
+  if (typeof(parm_form)=="character" && length(parm_form)>0) {
     ## linear model specified for some parameters
     vars <- sapply(strsplit(parm_form, "~", fixed=T),"[",1)
-    models <-  sapply(strsplit(parm_form, "~", fixed=T),"[",2)
+    models <-  paste0("~", sapply(strsplit(parm_form, "~", fixed=T),"[",2))
   } else {parm_form <- c(); vars <- c(); models <- c()}
 
   # FIXME for any missing components, substitute "~1"
@@ -61,11 +61,11 @@ sand_vcov <- function(fit) {
 
                               dlnorm(as.numeric(getElement(fit@data, fit@depvar)[i]),
 
-                                      logitp=t(x[1:ncol(mm1)]) %*% mm1,
+                                      logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
 
-                                      mu=t(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]) %*% mm2,
+                                      mu=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
 
-                                      lnsigma=t(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]) %*% mm3,
+                                      lnsigma=mm3 %*% matrix(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]),
 
                                       delta=fit@delta,
 
@@ -79,11 +79,11 @@ sand_vcov <- function(fit) {
 
                             dweib(as.numeric(getElement(fit@data, fit@depvar)[i]),
 
-                                   logitp=t(x[1:ncol(mm1)]) %*% mm1,
+                                   logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
 
-                                   lnalpha=t(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]) %*% mm2,
+                                   lnalpha=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
 
-                                   lnbeta=t(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]) %*% mm3,
+                                   lnbeta=mm3 %*% matrix(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]),
 
                                    delta=fit@delta,
 
@@ -96,9 +96,9 @@ sand_vcov <- function(fit) {
 
                           dexp(as.numeric(getElement(fit@data, fit@depvar)[i]),
 
-                                 logitp=t(x[1:ncol(mm1)]) %*% mm1,
+                                 logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
 
-                                 lnbeta=t(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]) %*% mm2,
+                                 lnbeta=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
 
                                  delta=fit@delta,
 

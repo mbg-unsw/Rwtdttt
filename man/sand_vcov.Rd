@@ -2,13 +2,16 @@
 % Please edit documentation in R/sandwich.R
 \name{sand_vcov}
 \alias{sand_vcov}
-\title{Title}
+\title{Calculate a robust variance-covariance matrix using the sandwich estimator}
 \usage{
 sand_vcov(fit)
 }
 \arguments{
-\item{fit}{}
+\item{fit}{an object of class "wtd" returned by \code{ranwtdttt()}}
+}
+\value{
+sand_vcov returns a matrix
 }
 \description{
-Title
+Calculate a robust variance-covariance matrix using the sandwich estimator
 }

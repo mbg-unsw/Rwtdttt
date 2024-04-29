@@ -11,7 +11,7 @@ Description: Estimation of prescription durations and treatment
     some estimate of duration of treatment after a dispensing (known as
     the prescription duration), which can be estimated using the
     parametric Waiting Time Distribution.
-License: What license is it under?
+License: GPL (>= 3)
 Roxygen: list(markdown = TRUE)
 Imports: 
     bbmle,

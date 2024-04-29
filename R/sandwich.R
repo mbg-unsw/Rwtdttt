@@ -1,10 +1,10 @@
 # calculate sandwich vcov
 
-#' Title
+#' Calculate a robust variance-covariance matrix using the sandwich estimator
 #'
-#' @param fit
+#' @param fit an object of class "wtd" returned by `ranwtdttt()`
 #'
-#' @return
+#' @return sand_vcov returns a matrix
 #' @importFrom stats model.matrix
 #' @importFrom numDeriv grad
 #'

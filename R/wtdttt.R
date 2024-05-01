@@ -51,7 +51,7 @@ NULL
 #' If the redemption time data are of type date, a continuity correction will be
 #' applied automatically.
 #'
-#' @param form an object of class "formula" (or one that can be coered to that
+#' @param form an object of class "formula" (or one that can be coerced to that
 #' class): a symbolic description of the model to be fitted. The details of the
 #' model specification are given under 'Details'
 #' @param parameters optional model formulae for distribution parameters

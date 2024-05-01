@@ -89,6 +89,8 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   # FIXME should we remove any observations that fall outside start ... end
   #       or just flag an error?
+  # SG: two if statements added in the block of code that filters rows keeping min or max if dataset has multiple rows per subject
+
 
   # if (length(unique(cpy[, get(id)]))==dim(cpy)[1]) {
   #   data <- data
@@ -108,13 +110,30 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop(paste0("'", id, "'", "is not in data"))
     }
 
+
     if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
 
+      cpy <- cpy[obs.name>=start & obs.name<=end]
       cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
 
     } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
 
+      cpy <- cpy[obs.name>=start & obs.name<=end]
       cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
+
+      # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
+    } else if ((length(unique(cpy[, get(id)]))==dim(cpy)[1]) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=0) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=dim(cpy)[1])) {
+
+      # keep only dates within the window
+      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
+      # and throw a warning
+      warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
+
+      # if the dataset provided has just one row per subject, and ALL dates are out of the window defined by start and end
+    } else if ((length(unique(cpy[, get(id)]))==dim(cpy)[1]) & sum(cpy[, get(obs.name)<start] | cpy[, get(obs.name)]>end)!=0 & sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)==dim(cpy)[1]) {
+
+      # throw an error
+      stop("All dates are out of the window defined by start and end")
 
     }
   }
@@ -151,6 +170,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   # Check if the user provided dates (discrete) or numbers (continuous)
   # XXXX do we need to record this in the fit object?
   # XXXX function definition currently includes no 'conttime' parameter
+
+  # SG: should we let the user to supply the type of time variable (including conttime as a parameter of the function),
+  # or should we just derive it within the function as it is right now?
 
   if(class(cpy[[obs.name]])=="Date" && class(start)=="Date" && class(end)=="Date")
     conttime <- 0

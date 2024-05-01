@@ -2,10 +2,10 @@
 
 # Register a 'wtd' class, inheriting from 'mle2'
 
-#' @slot delta
-#' @slot dist
-#' @slot depvar
-#' @slot idvar
+#' @slot delta value of the delta parameter
+#' @slot dist name of the WTD distribution family: "lnorm", "weib" or "exp"
+#' @slot depvar name of the dependent variable
+#' @slot idvar (optional) name of the id variable
 #'
 #' @exportClass wtd
 #' @importClassesFrom bbmle mle2

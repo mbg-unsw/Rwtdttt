@@ -9,8 +9,6 @@ NULL
 #' Make diagnostic plots showing the fit of an estimated parametric Waiting Time
 #' Distribution (WTD) with respect to the observed histogram of prescription
 #' redemptions.
-#' HS 240108: I think this needs to incorporate information on time period
-#' of observations (start and end specified in call to wtdttt)
 #'
 #' @param wtd wtd object, typically result of wtdttt
 #' @export

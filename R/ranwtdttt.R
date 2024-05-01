@@ -7,11 +7,11 @@ NULL
 #'
 #' `ranwtdttt()` estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)
 #' based on observed prescription redemptions with adjustment for covariates
-#' using one or more random index times for each individual. Reports estimates
+#' using one or more random index times for each individual. It reports estimates
 #' of prevalence fraction and specified percentile of inter-arrival density
 #' together with regression coefficients.
 #'
-#' @param form an object of class "formula" (or one that can be coered to that
+#' @param form an object of class "formula" (or one that can be coerced to that
 #' class): a symbolic description of the model to be fitted. The details of the
 #' model specification are given under 'Details'
 #' @param parameters model formulae for distribution parameters

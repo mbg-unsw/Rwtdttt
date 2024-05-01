@@ -54,7 +54,7 @@ setMethod("predict", "wtd",
 
                 lnalpha <- object@fullcoef[2]
                 lnbeta <- object@fullcoef[3]
-                ### which is the shape?
+                ### lnalpha is the shape on the log-scale (lnalpha = 0 is exponential)
                 out <- pweibull(-((distrx*exp(lnbeta))^exp(lnalpha)), shape = lnalpha)
               }
 

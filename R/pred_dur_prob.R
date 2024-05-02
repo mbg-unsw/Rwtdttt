@@ -10,7 +10,16 @@ NULL
 #' (WTD) model, either the probability of a person still being in treatment or
 #' the duration of observed prescription redemptions.
 #'
-#' @param wtd a fitted object of class inheriting from "wtd"
+#' @param object a fitted object of class inheriting from "wtd"
+#' @param newdata An optional data frame in which to look for variables with
+#' which to predict. If omitted, the fitted values are used.
+#' @param type "dur" or "prob". Default "dur".
+#' @param distrx For type="prob", a vector of dispensing gaps.
+#' @param quantile For type="dur", quantile of distribution. Default 0.8
+#' @param se.fit A switch indicating if standard errors are required
+#' @param na.action function determining what should be done with missing values in
+#' `newdata`. The default is to predict `NA`
+#' @param ... further arguments passed to or from other methods
 #'
 #' @return A vector of predictions
 #' @export

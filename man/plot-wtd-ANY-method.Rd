@@ -4,15 +4,19 @@
 \alias{plot,wtd,ANY-method}
 \title{Make WTD diagnostic plots}
 \usage{
-\S4method{plot}{wtd,ANY}(object, x, y, ...)
+\S4method{plot}{wtd,ANY}(wtd, x = NULL, y = NULL, ...)
 }
 \arguments{
 \item{wtd}{wtd object, typically result of wtdttt}
+
+\item{x}{ignored}
+
+\item{y}{ignored}
+
+\item{...}{other graphical parameters (see \code{par})}
 }
 \description{
 Make diagnostic plots showing the fit of an estimated parametric Waiting Time
 Distribution (WTD) with respect to the observed histogram of prescription
 redemptions.
-HS 240108: I think this needs to incorporate information on time period
-of observations (start and end specified in call to wtdttt)
 }

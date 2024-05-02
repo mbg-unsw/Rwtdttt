@@ -25,7 +25,7 @@ by as.data.frame to a data frame) containing the variables in the model. If
 not found in data, the variables are taken from environment(formula),
 typically the environment from which wtdttt is called.}
 
-\item{form}{an object of class "formula" (or one that can be coered to that
+\item{form}{an object of class "formula" (or one that can be coerced to that
 class): a symbolic description of the model to be fitted. The details of the
 model specification are given under 'Details'}
 

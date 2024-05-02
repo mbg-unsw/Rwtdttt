@@ -16,7 +16,23 @@
 )
 }
 \arguments{
-\item{wtd}{a fitted object of class inheriting from "wtd"}
+\item{object}{a fitted object of class inheriting from "wtd"}
+
+\item{newdata}{An optional data frame in which to look for variables with
+which to predict. If omitted, the fitted values are used.}
+
+\item{type}{"dur" or "prob". Default "dur".}
+
+\item{distrx}{For type="prob", a vector of dispensing gaps.}
+
+\item{quantile}{For type="dur", quantile of distribution. Default 0.8}
+
+\item{se.fit}{A switch indicating if standard errors are required}
+
+\item{na.action}{function determining what should be done with missing values in
+\code{newdata}. The default is to predict \code{NA}}
+
+\item{...}{further arguments passed to or from other methods}
 }
 \value{
 A vector of predictions

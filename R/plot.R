@@ -11,38 +11,41 @@ NULL
 #' redemptions.
 #'
 #' @param wtd wtd object, typically result of wtdttt
+#' @param x ignored
+#' @param y ignored
+#' @param ... other graphical parameters (see `par`)
 #' @export
 #' @importFrom graphics hist curve
 setMethod("plot", "wtd",
-          function(object, x, y, ...) {
+          function(wtd, x = NULL, y = NULL, ...) {
 
-            h <- hist(object@data[[object@depvar]], freq=F,
-                      main=object@dist, xlab=object@depvar)
+            h <- hist(wtd@data[[wtd@depvar]], freq=F,
+                      main=wtd@dist, xlab=wtd@depvar)
             d <- h$breaks[2] - h$breaks[1]
 
-            if(object@dist=="lnorm") {
-              logitp <- object@fullcoef[1]
-              mu <- object@fullcoef[2]
-              lnsigma <- object@fullcoef[3]
+            if(wtd@dist=="lnorm") {
+              logitp <- wtd@fullcoef[1]
+              mu <- wtd@fullcoef[2]
+              lnsigma <- wtd@fullcoef[3]
 
-              curve(dlnorm(x, logitp, mu, lnsigma, object@delta),
-                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
-            } else if(object@dist=="weib") {
+              curve(dlnorm(x, logitp, mu, lnsigma, wtd@delta),
+                    from=0.1, to=max(wtd@data[[wtd@depvar]]), add=T)
+            } else if(wtd@dist=="weib") {
 
-              logitp <- object@fullcoef[1]
-              lnalpha <- object@fullcoef[2]
-              lnbeta <- object@fullcoef[3]
+              logitp <- wtd@fullcoef[1]
+              lnalpha <- wtd@fullcoef[2]
+              lnbeta <- wtd@fullcoef[3]
 
-              curve(dweib(x, logitp, lnalpha, lnbeta, object@delta),
-                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
+              curve(dweib(x, logitp, lnalpha, lnbeta, wtd@delta),
+                    from=0.1, to=max(wtd@data[[wtd@depvar]]), add=T)
 
-            } else if(object@dist=="exp") {
+            } else if(wtd@dist=="exp") {
 
-              logitp <- object@fullcoef[1]
-              lnbeta <- object@fullcoef[2]
+              logitp <- wtd@fullcoef[1]
+              lnbeta <- wtd@fullcoef[2]
 
-              curve(dexp(x, logitp, lnbeta, object@delta),
-                    from=0.1, to=max(object@data[[object@depvar]]), add=T)
+              curve(dexp(x, logitp, lnbeta, wtd@delta),
+                    from=0.1, to=max(wtd@data[[wtd@depvar]]), add=T)
 
             }
           })

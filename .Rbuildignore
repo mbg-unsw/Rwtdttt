@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^.Rd2pdf.*$
+^sandpit/
+^Rwtdttt\.pdf$

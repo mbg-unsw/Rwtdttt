@@ -1,2 +1,3 @@
 * Add/fix test cases
 * Convert example datasets into R format
+* Add summary/print methods for wtd class

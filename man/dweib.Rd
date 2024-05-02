@@ -7,7 +7,7 @@
 dweib(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE)
 }
 \arguments{
-\item{x}{vector of prescription redemption times}
+\item{x}{vector of event times (must be between (0; delta))}
 
 \item{logitp}{log-odds of being a prevalent user}
 
@@ -15,7 +15,7 @@ dweib(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE)
 
 \item{lnbeta}{log of beta (scale)}
 
-\item{delta}{XXXX}
+\item{delta}{width of interval with positive support (x in (0; delta))}
 
 \item{log}{logical; if TRUE, probabilities p are given as log(p)}
 }

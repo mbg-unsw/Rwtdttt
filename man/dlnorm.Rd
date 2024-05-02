@@ -7,7 +7,7 @@
 dlnorm(x, logitp, mu, lnsigma, delta = 1, log = FALSE)
 }
 \arguments{
-\item{x}{vector of prescription redemption times}
+\item{x}{vector of event times (must be between (0; delta))}
 
 \item{logitp}{log-odds of being a prevalent user}
 
@@ -15,9 +15,9 @@ dlnorm(x, logitp, mu, lnsigma, delta = 1, log = FALSE)
 
 \item{lnsigma}{log of standard deviation on log-scale}
 
-\item{delta}{XXXX}
+\item{delta}{width of interval with positive support (x in (0; delta))}
 
-\item{log}{logical; if TRUE, probabilities p are given as log(p).}
+\item{log}{logical; if TRUE, density values are returned on log-scale.}
 }
 \description{
 The Lognormal distribution

@@ -34,50 +34,60 @@ NULL
 #' @param control a list of parameters for controlling the fitting process.
 #' @param ... further arguments passed to other methods.
 #'
-#' @return wtdttt returns an object of class "wtd" inheriting from "mle".
+#' @return ranwtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom data.table data.table setDT := .N .SD as.data.table setnames
 #' @export
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
                       nsamp=4, subset, na.action=na.pass, init, control=NULL, ...) {
 
-  data_init <- copy(data)
 
-  # (to be modified, just to try) initializing an empty dataframe
-  tmp <- data.table(pid = character(),
-                    rxdate = as.Date(as.character()),
-                    indda = as.Date(as.character()),
-                    rxshift = as.Date(as.character()))
+  # creation of shifted dates
 
-  # for loop to implement the multiple random index date
-  for (i in 1:nsamp) {
+    obs.name <- all.vars(form)[1]
+    delta <- as.numeric(end - start)
 
-  set.seed(84)
+    f <- function() {
 
-  obs.name <- all.vars(form)[1]
+      if (!reverse) {
 
-  delta <- as.numeric(end - start)
+        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= indda + delta,][, .SD[which.min(get(obs.name))], by = id][, rxshift := get(obs.name) - (indda-start)]
 
-  if (!reverse) {
+      } else {
 
-    data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= indda + delta,][, .SD[which.min(get(obs.name))], by = id][, rxshift := get(obs.name) - (indda-start)]
+        setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= indda - delta][, .SD[which.max(get(obs.name))], by = get(id)][, rxshift := get(obs.name) + end - indda]
 
-    # browser()
+      }
 
-  } else {
 
-    # adatto come sopra (reverse=F)
-    setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= indda - delta][, .SD[which.max(get(obs.name))], by = get(id)][, rxshift := get(obs.name) + end - indda]
+    }
 
-  }
+  # bind multiple copies of dataframes
+  tmp <- do.call(rbind, replicate(nsamp, f(), simplify = FALSE))
 
-  # bind multiple copies of dataframe
-  tmp <- rbind(tmp, data)
 
-}
+  disttmp <- attr(terms(form, specials=c("dlnorm", "dweib", "dexp")), "specials")
 
-  # newform <- if()
+  dist <- if(isTRUE(disttmp$dlnorm==2)) "lnorm" # need isTRUE() as value can be NULL
+          else if(isTRUE(disttmp$dweib==2)) "weib"
+          else if(isTRUE(disttmp$dexp==2)) "exp"
 
-  out <- wtdttt(rxshift ~ dlnorm(logitp, mu, lnsigma), parameters = parameters, start=start, end=end, id = id, data=tmp) # check row 103 in wtdttt: if(!is.na(id))
+
+  if(dist == "lnorm") {
+
+     newform <- rxshift ~ dlnorm(logitp, mu, lnsigma)
+
+  } else if (dist == "weib") {
+
+     newform <- rxshift ~ dweib(logitp, lnalpha, lnbeta)
+
+  } else if (dist == "exp") {
+
+     newform <- rxshift ~ dexp(logitp, lnbeta)
+
+  } else stop("model must use one of dlnorm, dweib or dexp")
+
+
+  out <- wtdttt(form = newform, parameters = parameters, start=start, end=end, id = id, data=tmp) # check row 103 in wtdttt: if(!is.na(id))
 
   return(out)
 

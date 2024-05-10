@@ -4,24 +4,6 @@
 #' @include wtd-class.R
 NULL
 
-# create_time <- function(event.date.colname, data, start, ...) {
-#
-#   event.date.colname <- deparse(substitute(event.date.colname))
-#   data[,obstime := as.numeric(0.5 + get(event.date.colname) - start)]
-#
-# }
-#
-# create_time_random <- function(event.date.colname, data, ...) {
-#
-#   event.date.colname <- deparse(substitute(event.date.colname))
-#   # index.date.colname <- deparse(substitute(index.date.colname))
-#
-#   data[,r_index_date := sample(as.Date(as.Date("2014-01-01"):as.Date("2014-12-31")), nrow(data), replace = T)]
-#   data[,obstime := as.numeric(0.5 + get(event.date.colname) - r_index_date)]
-#
-# }
-
-#########################################################
 
 #' Fit Waiting Time Distribution
 #'
@@ -39,6 +21,12 @@ NULL
 #' * `dist`: the parametric distribution for the forward or backward recurrence
 #' density (FRD/BRD), which must be `dexp()`, `dweib()` or `dlnorm()`
 #' i.e named after their corresponding interarrival density (IAD).
+#'
+#' The model formula `parameters` follows the pattern `list(alpha ~ "covariate", beta ~ "covariate", gamma ~ 1)`
+#' with
+#'
+#' * `covariate`: the variable that is informative about the duration to the next prescription redemption and that will affect the estimate of the parameters of the model
+#' In the pattern reported above the covariaste only affect alpha and beta, but not gamma (since 1 is supplied after ~)
 #'
 #' @section Data format:
 #' The WTD is fit to the first prescription redemption of each
@@ -80,7 +68,7 @@ NULL
 #' @export
 #'
 #' @examples
-wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
+wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id,
                    subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
 
   cpy <- as.data.table(data)
@@ -110,6 +98,7 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop(paste0("'", id, "'", "is not in data"))
     }
 
+  }
 
     if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
 
@@ -136,7 +125,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop("All dates are out of the window defined by start and end")
 
     }
-  }
 
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error

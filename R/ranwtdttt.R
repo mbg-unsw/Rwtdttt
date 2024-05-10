@@ -40,6 +40,8 @@ NULL
 ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
                       nsamp=4, subset, na.action=na.pass, init, control=NULL, ...) {
 
+  data_init <- copy(data)
+
   # (to be modified, just to try) initializing an empty dataframe
   tmp <- data.table(pid = character(),
                     rxdate = as.Date(as.character()),
@@ -73,9 +75,9 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
 
 }
 
-  out <- tmp
-  # out <- data
-  # out <- wtdttt(data, form)
+  # newform <- if()
+
+  out <- wtdttt(rxshift ~ dlnorm(logitp, mu, lnsigma), parameters = parameters, start=start, end=end, id = id, data=tmp) # check row 103 in wtdttt: if(!is.na(id))
 
   return(out)
 

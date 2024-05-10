@@ -25,20 +25,26 @@ NULL
 #' @export
 #' @importFrom stats pnorm pweibull pexp
 setMethod("predict", "wtd",
-          function(object, newdata=NULL, type="dur", distrx=NULL, quantile=0.8,
+          function(object, newdata=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
             # Lognormal distribution
             if(object@dist=="lnorm") {
 
               if(type=="dur") {
-                # Case with iadmean==FALSE
 
                 mu <- object@fullcoef[2]
                 lnsigma <- object@fullcoef[3]
 
-                # out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
-                out <- exp(mu + .5 * exp(lnsigma)^2)
+                  if(!iadmean) {
+
+                    out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
+
+                  } else {
+
+                    out <- exp(mu + .5 * exp(lnsigma)^2)
+
+                  }
 
               } else if(type=="prob") {
 
@@ -52,36 +58,51 @@ setMethod("predict", "wtd",
             } else if(object@dist=="weib") {
 
               if(type=="dur") {
-                # Case with iadmean==FALSE
 
                 lnalpha <- object@fullcoef[2]
                 lnbeta <- object@fullcoef[3]
 
-                out <- (-log(1-quantile))^(1/exp(lnalpha))*exp(lnbeta)
+                  if(!iadmean) {
+
+                    out <- (-log(1-quantile))^(1/exp(lnalpha))*exp(lnbeta)
+
+                  } else  {
+
+                    out <-  exp(-lnbeta)^exp(-lnalpha) * exp(lgamma(1 + exp(- lnalpha)))
+
+                  }
 
               } else if(type=="prob") {
 
                 lnalpha <- object@fullcoef[2]
                 lnbeta <- object@fullcoef[3]
                 ### lnalpha is the shape on the log-scale (lnalpha = 0 is exponential)
-                out <- pweibull(-((distrx*exp(lnbeta))^exp(lnalpha)), shape = lnalpha)
+                # out <- pweibull(-((distrx*exp(lnbeta))^exp(lnalpha)), shape = lnalpha)
+                out <- exp(-((distrx*exp(lnbeta))^exp(lnalpha)))
               }
 
               # Exponential distribution
             } else if(object@dist=="exp") {
 
               if(type=="dur") {
-                # Case with iadmean==FALSE
 
                 lnbeta <- object@fullcoef[2]
 
-                out <- (-log(1-quantile))*exp(lnbeta)
+                  if(!iadmean) {
+
+                    out <- (-log(1-quantile))/exp(lnbeta)
+
+                  } else {
+
+                    out <- exp(-lnbeta)
+
+                  }
 
               } else if(type=="prob") {
 
                 lnbeta <- object@fullcoef[2]
 
-                out <- pexp(-(distrx*exp(lnbeta)))
+                out <- exp(-exp(lnbeta)*distrx)
               }
 
             }

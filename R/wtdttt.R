@@ -113,12 +113,12 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
     if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
 
-      cpy <- cpy[obs.name>=start & obs.name<=end]
+      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
       cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
 
     } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
 
-      cpy <- cpy[obs.name>=start & obs.name<=end]
+      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
       cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
 
       # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
@@ -211,6 +211,7 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     setnames(cpy, "obs.time", obs.name)
 
   }
+
 
   # should be calculate the proportion in a different way according to reverse parameter?
   # [no, it's OK according to wtdttt.ado - Malcolm]

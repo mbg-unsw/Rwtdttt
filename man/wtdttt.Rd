@@ -11,7 +11,7 @@ wtdttt(
   start = NA,
   end = NA,
   reverse = F,
-  id = NA,
+  id,
   subset = NA,
   na.action = na.pass,
   init = NULL,
@@ -72,6 +72,13 @@ with
 \item \code{dist}: the parametric distribution for the forward or backward recurrence
 density (FRD/BRD), which must be \code{dexp()}, \code{dweib()} or \code{dlnorm()}
 i.e named after their corresponding interarrival density (IAD).
+}
+
+The model formula \code{parameters} follows the pattern \code{list(alpha ~ "covariate", beta ~ "covariate", gamma ~ 1)}
+with
+\itemize{
+\item \code{covariate}: the variable that is informative about the duration to the next prescription redemption and that will affect the estimate of the parameters of the model
+In the pattern reported above the covariaste only affect alpha and beta, but not gamma (since 1 is supplied after ~)
 }
 }
 

@@ -50,7 +50,7 @@ NULL
 #' @param start start of observation window (date or real number)
 #' @param end end of observation window (date or real number)
 #' @param reverse logical; Fit the reverse waiting time distribution (default F).
-#' @param id name of the id variable (optional)
+#' @param id.varname name of the id variable (optional)
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process.
 #' @param na.action a function which indicates what should happen when the data
@@ -68,63 +68,53 @@ NULL
 #' @export
 #'
 #' @examples
-wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id,
+wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.varname=NA,
                    subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
 
   cpy <- as.data.table(data)
 
   obs.name <- all.vars(form)[1]
 
-  # FIXME should we remove any observations that fall outside start ... end
-  #       or just flag an error?
-  # SG: two if statements added in the block of code that filters rows keeping min or max if dataset has multiple rows per subject
+  cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
 
+  if(is.na(id.varname)) {
 
-  # if (length(unique(cpy[, get(id)]))==dim(cpy)[1]) {
-  #   data <- data
-  # } else if (length(unique(data[, get(id)]))!=dim(data)[1] & reverse==FALSE) {
-  #   # data[, new_date := first(get(obs.name)), by = get(id)]
-  #   data <- data[, .SD[which.min(get(obs.name))], by = get(id)]
-  # # } else data[, new_date := data.table::last(get(obs.name)), by = get(id)]
-  # } else data <- data[, .SD[which.max(get(obs.name))], by = get(id)]
+    warning("The id variable was not provided so all data will be used, considering there is one row per subject")
 
-  if(!is.na(id)) {
+  } else if(!is.na(id.varname)) {
 
-    if(length(id)>1) {
+    if(length(id.varname)>1) {
       stop("id colname must be a single element")
     }
 
-    if(!(id %in% names(cpy))) {
-      stop(paste0("'", id, "'", "is not in data"))
+    if(!(id.varname %in% names(cpy))) {
+      stop(paste0("'", id.varname, "'", "is not in data"))
     }
 
-  }
+    if (length(unique(cpy[, get(id.varname)]))!=dim(cpy)[1] & reverse==FALSE) {
 
-    if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==FALSE) {
+      cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id.varname)]
 
-      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
-      cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id)]
+    } else if (length(unique(cpy[, get(id.varname)]))!=dim(cpy)[1] & reverse==TRUE) {
 
-    } else if (length(unique(cpy[, get(id)]))!=dim(cpy)[1] & reverse==TRUE) {
-
-      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
-      cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id)]
+      cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id.varname)]
 
       # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
-    } else if ((length(unique(cpy[, get(id)]))==dim(cpy)[1]) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=0) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=dim(cpy)[1])) {
+    } else if ((length(unique(cpy[, get(id.varname)]))==dim(cpy)[1]) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=0) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=dim(cpy)[1])) {
 
-      # keep only dates within the window
-      cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
-      # and throw a warning
+      # throw a warning
       warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
 
       # if the dataset provided has just one row per subject, and ALL dates are out of the window defined by start and end
-    } else if ((length(unique(cpy[, get(id)]))==dim(cpy)[1]) & sum(cpy[, get(obs.name)<start] | cpy[, get(obs.name)]>end)!=0 & sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)==dim(cpy)[1]) {
+    } else if ((length(unique(cpy[, get(id.varname)]))==dim(cpy)[1]) & sum(cpy[, get(obs.name)<start] | cpy[, get(obs.name)]>end)!=0 & sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)==dim(cpy)[1]) {
 
       # throw an error
       stop("All dates are out of the window defined by start and end")
 
     }
+
+  }
+
 
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
@@ -245,6 +235,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id,
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
-  out@idvar <- if(is.na(id)) character(0) else id
+  out@idvar <- if(is.na(id.varname)) character(0) else id.varname
   return(out)
 }

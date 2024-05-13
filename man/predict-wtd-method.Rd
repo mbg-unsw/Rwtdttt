@@ -8,6 +8,7 @@
   object,
   newdata = NULL,
   type = "dur",
+  iadmean = F,
   distrx = NULL,
   quantile = 0.8,
   se.fit = FALSE,

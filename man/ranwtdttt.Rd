@@ -57,7 +57,7 @@ possible value is NULL, no action. Value na.exclude can be useful.}
 \item{...}{further arguments passed to other methods.}
 }
 \value{
-wtdttt returns an object of class "wtd" inheriting from "mle".
+ranwtdttt returns an object of class "wtd" inheriting from "mle".
 }
 \description{
 \code{ranwtdttt()} estimates maximum likelihood estimates for parametric Waiting Time Distribution (WTD)

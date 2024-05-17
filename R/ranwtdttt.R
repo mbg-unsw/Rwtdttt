@@ -19,13 +19,14 @@ NULL
 #' by as.data.frame to a data frame) containing the variables in the model. If
 #' not found in data, the variables are taken from environment(formula),
 #' typically the environment from which wtdttt is called.
-#' @param id the name of the variable that identifies distinct individuals
+#' @param id.varname the name of the variable that identifies distinct individuals
 #' @param start start of observation window
 #' @param end end of observation window
 #' @param reverse logical; Fit the reverse waiting time distribution.
 #' @param nsamp number of samples to take.
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process.
+#' @param robust logical; compute a robust estimate of variance.
 #' @param na.action a function which indicates what should happen when the data
 #' contain NAs. The default is set by the na.action setting of options, and is
 #' na.fail if that is unset. The 'factory-fresh' default is na.omit. Another
@@ -37,8 +38,19 @@ NULL
 #' @return ranwtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom data.table data.table setDT := .N .SD as.data.table setnames
 #' @export
-ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
-                      nsamp=4, subset, na.action=na.pass, init, control=NULL, ...) {
+ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.varname=NA,
+                      nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {
+
+
+  # if(!subset) {
+  #
+  #   data <- data
+  #
+  # } else if(subset) {
+  #
+  #   data <- data[subset]
+  #
+  # }
 
 
   # creation of shifted dates
@@ -46,20 +58,22 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
     obs.name <- all.vars(form)[1]
     delta <- as.numeric(end - start)
 
+
     f <- function() {
 
       if (!reverse) {
 
-        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= indda + delta,][, .SD[which.min(get(obs.name))], by = id][, rxshift := get(obs.name) - (indda-start)]
+        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= (indda + delta),][, .SD[which.min(get(obs.name))], by = id.varname][, rxshift := get(obs.name) - (indda-start)]
 
       } else {
 
-        setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= indda - delta][, .SD[which.max(get(obs.name))], by = get(id)][, rxshift := get(obs.name) + end - indda]
+        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= (indda - delta),][, .SD[which.max(get(obs.name))], by = id.varname][, rxshift := get(obs.name) + (end - indda)]
 
       }
 
 
     }
+
 
   # bind multiple copies of dataframes
   tmp <- do.call(rbind, replicate(nsamp, f(), simplify = FALSE))
@@ -87,7 +101,19 @@ ranwtdttt <- function(form, parameters=NULL, data, id, start, end, reverse=F,
   } else stop("model must use one of dlnorm, dweib or dexp")
 
 
-  out <- wtdttt(form = newform, parameters = parameters, start=start, end=end, id = id, data=tmp) # check row 103 in wtdttt: if(!is.na(id))
+  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, id.varname = id.varname, subset = subset, init = init, data = tmp)
+
+  if (!robust) {
+
+    out <- out
+
+  } else {
+
+    vcov_s <- sand_vcov(out)
+    out@vcov <- vcov_s
+
+  }
+
 
   return(out)
 

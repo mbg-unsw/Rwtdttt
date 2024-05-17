@@ -4,6 +4,7 @@ library(bbmle)
 library(Rwtdttt)
 library(haven)
 library(data.table)
+library(tidyverse)
 
 # load data
 # Dataset contains one observation per person, first dispensing for 2014
@@ -13,7 +14,8 @@ df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdtt
 fit1 <- wtdttt(data = df,
                rx1time ~ dlnorm(logitp, mu, lnsigma),
                id = "pid",
-               start = as.Date('2014-01-01'), end = as.Date('2014-12-31')
+               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
+               subset = "rx1time"=="2014-01-01"
                )
 
 
@@ -50,7 +52,7 @@ plot(fit3)
 
 # Compare results with those obtained from wtdttt_ex.do in Stata ----
 
-## 1) Open the example dataset (discrete time), ordinary WTD analysis with event dates ----
+## 1) Ordinary WTD analysis with event dates (discrete time) ----
 df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
 
 # fit waiting time distribution
@@ -60,18 +62,16 @@ fit1 <- wtdttt(data = df,
                start = as.Date('2014-01-01'), end = as.Date('2014-12-31')
 )
 
-
 summary(fit1)
 
-## 2) Open the example dataset (continuous time), reverse WTD analysis with covariates ----
+## 2) Reverse WTD analysis with covariates (continuous time)----
 df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
 
 ### fit waiting time distribution (exp) ----
 fit3 <- wtdttt(data = df,
                last_rxtime ~ dexp(logitp, lnbeta),
-               start = 0, end = 1, reverse = T,
+               start = 0, end = 1, reverse = T, subset = "packsize" ==200
 )
-
 
 summary(fit3)
 
@@ -94,6 +94,10 @@ summary(fit2)
 
 ### Use covariate in all three parameter equations ----
 
+# make packsize a factor
+df <- df %>%
+       mutate(packsize = as.factor(packsize))
+
 # parameters = list(logitp ~ packcat, mu ~ packcat, lnsigma ~ 1)
 fit1 <- wtdttt(data = df,
                last_rxtime ~ dlnorm(logitp, mu, lnsigma),
@@ -102,29 +106,93 @@ fit1 <- wtdttt(data = df,
 
 summary(fit1)
 
-
 ### Since covariate appears to have little influence on the lnsigma parameter, we estimate a model where number of pills only affect median parameter (mu) and the prevalence (logitp)
 fit1 <- wtdttt(data = df,
                last_rxtime ~ dlnorm(logitp, mu, lnsigma),
-               start = 0, end = 1, reverse = T, parameters = list(logitp ~ "packsize", mu ~ "packsize", lnsigma ~ 1)
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
 )
 
 summary(fit1)
 
-## 3) A small example showing how treatment probability can be predicted based on the distance between index dates and date of last prescription redemption, while taking covariates (here: pack size) into account. The last fitted WTD is used for this prediction.
+## 3) Prediction of treatment probability: A small example showing how treatment probability can be predicted based on the distance between index dates and date of last prescription redemption, while taking covariates (here: pack size) into account. The last fitted WTD is used for this prediction. ----
 df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
 
-predict(fit1, type = "prob", distrx = df$distlast)
+df <- df %>% arrange(packsize, distlast)
+prob_pred <- predict(fit1, type = "prob", distrx = df$distlast)
 
+# df <- df %>% arrange(packsize, distlast)
+plot(df$distlast, prob_pred, type = "l", ylim = c(0,1))
+
+
+# try if the model without covariates matches stata results
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               # id = "pid",
+               start = 0, end = 1, reverse = T
+)
+
+df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
+
+df <- df %>% arrange(packsize, distlast)
+prob_pred <- predict(fit1, type = "prob", distrx = df$distlast)
+plot(df$distlast, prob_pred, type = "l")
+
+
+
+## 4) Prediction of prescription duration: Another example, where we predict duration of observed prescription redemptions based on an estimated WTD. Here the predicted duration corresponds to the 90th percentile of the IAD. ----
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+# make packsize a factor
+df <- df %>%
+  mutate(packsize = as.factor(packsize))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
+)
+
+summary(fit1)
+
+predict(fit1, type = "dur", quantile = 0.9)
+
+# try if the model without covariates matches stata results
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               # id = "pid",
+               start = 0, end = 1, reverse = T
+)
+
+predict(fit1, type = "dur", quantile = 0.9)
+
+## 5) Prediction of mean duration ----
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
+)
+
+# try if the model without covariates matches stata results
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               # id = "pid",
+               start = 0, end = 1, reverse = T
+)
+
+predict(fit1, type = "dur", iadmean = T)
+
+
+# Compare results with those obtained from ranwtdttt_ex.do in Stata ----
 
 ## 4) Random index date
 df <- haven::read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
 
 fit_r <- ranwtdttt(data = df,
-                   rxdate ~ dlnorm(logitp, mu, lnsigma), # change to shift date
+                   rxdate ~ dlnorm(logitp, mu, lnsigma),
                    id = "pid",
                    start = as.Date('2014-01-01'),
-                   end = as.Date('2014-12-31')
+                   end = as.Date('2014-12-31'),
+                   reverse = T
 )
 
 summary(fit_r)
@@ -137,12 +205,13 @@ df <- haven::read_dta(system.file("extdata", "drugpakud.dta", package="Rwtdttt")
 
 # filter clopidogrel dispensations
 df <- df %>%
-       filter(atc=="B01AC04")
+       filter(atc=="B01AC04") %>%
+       rename(pid = id)
 
 # fit waiting time distribution
 fit4 <- wtdttt(data = df,
                rxdate ~ dlnorm(logitp, mu, lnsigma),
-               id = "id",
+               id = "pid",
                start = as.Date('2015-01-01'), end = as.Date('2015-12-31')
 )
 

@@ -106,7 +106,7 @@ fit1 <- wtdttt(data = df,
 
 summary(fit1)
 
-### Since covariate appears to have little influence on the lnsigma parameter, we estimate a model where number of pills only affect median parameter (mu) and the prevalence (logitp)
+### Since covariate appears to have little influence on the lnsigma parameter, we estimate a model where number of pills only affect median parameter (mu) and the prevalence (logitp) ----
 fit1 <- wtdttt(data = df,
                last_rxtime ~ dlnorm(logitp, mu, lnsigma),
                start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
@@ -114,11 +114,27 @@ fit1 <- wtdttt(data = df,
 
 summary(fit1)
 
+### Try with more than one covariate ----
+df <- df %>% mutate(sex = sample(c("F","M"), dim(df)[1], replace = T))
+
+df <- df %>%
+  mutate(sex = as.factor(sex))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize+sex, mu ~ packsize+sex, lnsigma ~ 1)
+)
+
+summary(fit1)
+
 ## 3) Prediction of treatment probability: A small example showing how treatment probability can be predicted based on the distance between index dates and date of last prescription redemption, while taking covariates (here: pack size) into account. The last fitted WTD is used for this prediction. ----
 df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
 
-df <- df %>% arrange(packsize, distlast)
-prob_pred <- predict(fit1, type = "prob", distrx = df$distlast)
+df <- df %>%
+       arrange(packsize, distlast) %>%
+       mutate(packsize = as.factor(packsize))
+
+prob_pred <- predict(fit1, type = "prob", newdata = df, distrx = df$distlast)
 
 # df <- df %>% arrange(packsize, distlast)
 plot(df$distlast, prob_pred, type = "l", ylim = c(0,1))
@@ -136,7 +152,7 @@ fit1 <- wtdttt(data = df,
 df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
 
 df <- df %>% arrange(packsize, distlast)
-prob_pred <- predict(fit1, type = "prob", distrx = df$distlast)
+prob_pred <- predict(fit1, type = "prob", newdata = df, distrx = df$distlast)
 plot(df$distlast, prob_pred, type = "l")
 
 

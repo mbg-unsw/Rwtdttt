@@ -31,14 +31,88 @@ setMethod("predict", "wtd",
             # Lognormal distribution
             if(object@dist=="lnorm") {
 
-              if(type=="dur") {
+              parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
 
-                mu <- object@fullcoef[2]
-                lnsigma <- object@fullcoef[3]
+              # !! parnames e vars sono uguali (ne tengo solo uno)
+
+              parnames <- grep("delta", names(object@call$start), value=T, fixed=T, invert=T)
+
+              if (typeof(parm_form)=="character" && length(parm_form)>0) {
+                ## linear model specified for some parameters
+                vars <- sapply(strsplit(parm_form, "~", fixed=T),"[",1)
+                models <-  paste0("~", sapply(strsplit(parm_form, "~", fixed=T),"[",2))
+              } else {parm_form <- c(); vars <- c(); models <- c()}
+
+              for (i in seq(along=parnames)) {
+                if (!(parnames[i] %in% vars)) {
+                  vars <- c(vars, parnames[i])
+                  models <- c(models, "~1")
+                  parm_form <- c(parm_form, paste0(parnames[i], "~1"))
+                }
+              }
+
+              vpos <- list()
+              for (i in seq(along=parm_form)) {
+                vname <- vars[i]      ## name of variable
+                vpos[[vname]] <- which(parnames==vname)
+              }
+
+            # if(fit@dist=="lnorm") {
+
+              if (is.null(newdata)) {
+
+              mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
+              mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
+              mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
+
+              mm_names <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
+
+              } else {
+
+                for (i in seq_along(parnames)) {
+
+                  if (length(labels(terms(as.formula(parm_form[i]))))!=0) {
+
+                    if ((sum(!labels(terms(as.formula(parm_form[i]))) %in% names(newdata)==T)) >=1) {
+
+                      stop("Covariates used in the estimation are not in the prediction dataset (new data)")
+
+                    }
+
+                  }
+
+                }
+
+
+                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(newdata))
+                mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(newdata))
+                mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(newdata))
+
+              }
+
+              # design matrix multiplied by estimates
+              est <- list()
+              for (i in seq_along(parnames)) {
+                vname <- vars[i]      ## name of variable
+                est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
+              }
+
+              # compute parameters (i.e. mu) used to predict duration and probabilities
+              mm <- c("mm1", "mm2", "mm3")
+
+              for (i in seq_along(parnames)) {
+
+                x <- get(mm[i]) %*% matrix(unlist(est[i]))
+                assign(parnames[i], x)
+
+              }
+
+              if(type=="dur") {
 
                   if(!iadmean) {
 
                     out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
+                    out <- cbind(out, mm_names)
 
                   } else {
 
@@ -47,9 +121,6 @@ setMethod("predict", "wtd",
                   }
 
               } else if(type=="prob") {
-
-                mu <- object@fullcoef[2]
-                lnsigma <- object@fullcoef[3]
 
                 out <- pnorm(-(log(distrx)-mu)/exp(lnsigma))
               }
@@ -107,5 +178,17 @@ setMethod("predict", "wtd",
 
             }
 
-            out
+            if(type=="dur") {
+
+              return(unique(out))
+
+            } else if(type=="prob") {
+
+              return(out)
+
+            }
+
+
+
+
           })

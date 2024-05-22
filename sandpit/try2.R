@@ -128,6 +128,15 @@ fit1 <- wtdttt(data = df,
 summary(fit1)
 
 ## 3) Prediction of treatment probability: A small example showing how treatment probability can be predicted based on the distance between index dates and date of last prescription redemption, while taking covariates (here: pack size) into account. The last fitted WTD is used for this prediction. ----
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(packsize))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
+)
+
 df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
 
 df <- df %>%
@@ -139,8 +148,7 @@ prob_pred <- predict(fit1, type = "prob", newdata = df, distrx = df$distlast)
 # df <- df %>% arrange(packsize, distlast)
 plot(df$distlast, prob_pred, type = "l", ylim = c(0,1))
 
-
-# try if the model without covariates matches stata results
+### try if the model without covariates matches stata results ----
 df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
 
 fit1 <- wtdttt(data = df,
@@ -154,13 +162,14 @@ df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdtt
 df <- df %>% arrange(packsize, distlast)
 prob_pred <- predict(fit1, type = "prob", newdata = df, distrx = df$distlast)
 plot(df$distlast, prob_pred, type = "l")
+ggplot(data = df, aes(x=distlast, y=prob_pred, group = packsize)) +
+  geom_line() +
+  geom_point()
 
 
-
-## 4) Prediction of prescription duration: Another example, where we predict duration of observed prescription redemptions based on an estimated WTD. Here the predicted duration corresponds to the 90th percentile of the IAD. ----
+## 4) Prediction of prescription duration (based on an estimated WTD). ----
 df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
 
-# make packsize a factor
 df <- df %>%
   mutate(packsize = as.factor(packsize))
 
@@ -173,7 +182,77 @@ summary(fit1)
 
 predict(fit1, type = "dur", quantile = 0.9)
 
-# try if the model without covariates matches stata results
+### with a new dataset for prediction ----
+df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
+
+df <- df %>%
+  mutate(packsize = as.factor(packsize))
+
+predict(fit1, type = "dur", quantile = 0.9, newdata = df)
+
+### with more than one covariate (after having implemented model.frame in pred_dur_prob to extract var names) ----
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(packsize),
+                    sex = as.factor(sample(c("F","M"), dim(df)[1], replace = T)))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize+sex, mu ~ packsize+sex, lnsigma ~ 1)
+)
+
+predict(fit1, type = "dur", quantile = 0.9)
+
+### with more than one covariate and a new dataset (after having implemented model.frame in pred_dur_prob to extract var names) ----
+df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
+
+df <- df %>%
+       mutate(packsize = as.factor(packsize),
+              sex = as.factor(sample(c("F","M"), dim(df)[1], replace = T)))
+
+predict(fit1, type = "dur", quantile = 0.9, newdata = df)
+
+### with different covariates in the estimation and prediction dataset (checking the error message) ----
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(packsize),
+                    sex = as.factor(sample(c("F","M"), dim(df)[1], replace = T)))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize+sex, mu ~ packsize+sex, lnsigma ~ 1)
+)
+
+df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(packsize))
+
+predict(fit1, type = "dur", quantile = 0.9, newdata = df)
+
+### with a larger prediction dataset (multiple rows per subject) ----
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(packsize))
+
+fit1 <- wtdttt(data = df,
+               last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0, end = 1, reverse = T, parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ 1)
+)
+
+df <- haven::read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
+
+df <- df %>% mutate(packsize = as.factor(sample(c(100,200), dim(df)[1], replace = T)))
+
+predict(fit1, type = "dur", quantile = 0.9, newdata = df)
+
+
+## try if the model without covariates matches stata results
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+# make packsize a factor
+df <- df %>%
+  mutate(packsize = as.factor(packsize))
+
 fit1 <- wtdttt(data = df,
                last_rxtime ~ dlnorm(logitp, mu, lnsigma),
                # id = "pid",

@@ -30,7 +30,7 @@ setMethod("predict", "wtd",
 
             parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
 
-            # !! parnames e vars sono uguali (ne tengo solo uno)
+            # !! parnames e vars are the same (keep only one)
 
             parnames <- grep("delta", names(object@call$start), value=T, fixed=T, invert=T)
 
@@ -54,7 +54,6 @@ setMethod("predict", "wtd",
               vpos[[vname]] <- which(parnames==vname)
             }
 
-            # browser()
 
             # Lognormal distribution
             if(object@dist=="lnorm") {
@@ -65,7 +64,13 @@ setMethod("predict", "wtd",
               mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
               mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
 
-              mm_names <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
+              mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
+              mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
+              mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
+
+              check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
+              vec <- list(mm_names_1, mm_names_2, mm_names_3)
+              mm_names <- data.frame(vec[check])
 
               } else {
 
@@ -87,7 +92,13 @@ setMethod("predict", "wtd",
                 mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(prediction.data))
                 mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(prediction.data))
 
-                mm_names <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(prediction.data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
+                mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(prediction.data))
+                mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(prediction.data))
+
+                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
+                vec <- list(mm_names_1, mm_names_2, mm_names_3)
+                mm_names <- data.frame(vec[check])
 
               }
 
@@ -136,7 +147,13 @@ setMethod("predict", "wtd",
                 mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(object@data))
                 mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
 
-                mm_names <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(object@data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
+                mm_names_2 <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(object@data))
+                mm_names_3 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
+
+                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
+                vec <- list(mm_names_1, mm_names_2, mm_names_3)
+                mm_names <- data.frame(vec[check])
 
               } else {
 
@@ -158,7 +175,13 @@ setMethod("predict", "wtd",
                 mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(prediction.data))
                 mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
 
-                mm_names <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(prediction.data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
+                mm_names_2 <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(prediction.data))
+                mm_names_3 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
+
+                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
+                vec <- list(mm_names_1, mm_names_2, mm_names_3)
+                mm_names <- data.frame(vec[check])
 
               }
 
@@ -179,12 +202,8 @@ setMethod("predict", "wtd",
 
               }
 
-              # browser()
 
               if(type=="dur") {
-
-                # lnalpha <- object@fullcoef[2]
-                # lnbeta <- object@fullcoef[3]
 
 
                   if(!iadmean) {
@@ -215,7 +234,12 @@ setMethod("predict", "wtd",
                 mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
                 mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
 
-                mm_names <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
+                mm_names_2 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
+
+                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2]))
+                vec <- list(mm_names_1, mm_names_2)
+                mm_names <- data.frame(vec[check])
 
               } else {
 
@@ -236,7 +260,12 @@ setMethod("predict", "wtd",
                 mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
                 mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
 
-                mm_names <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
+                mm_names_2 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
+
+                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2]))
+                vec <- list(mm_names_1, mm_names_2)
+                mm_names <- data.frame(vec[check])
 
               }
 
@@ -259,8 +288,6 @@ setMethod("predict", "wtd",
 
               if(type=="dur") {
 
-                # lnbeta <- object@fullcoef[2]
-
                   if(!iadmean) {
 
                     out <- (-log(1-quantile))/exp(lnbeta)
@@ -273,8 +300,6 @@ setMethod("predict", "wtd",
                   }
 
               } else if(type=="prob") {
-
-                # lnbeta <- object@fullcoef[2]
 
                 out <- exp(-exp(lnbeta)*distrx)
               }

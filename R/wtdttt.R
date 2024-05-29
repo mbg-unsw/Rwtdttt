@@ -68,10 +68,54 @@ NULL
 #' @export
 #'
 #' @examples
+#' # Fit the WTD with a lognormal distribution ----------------------------------------------------
+#'
+#' # load data
+#' df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
+#'
+#' # fit the model
+#' fit1 <- wtdttt(data = df,
+#'                form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+#'                id = "pid",
+#'                start = as.Date('2014-01-01'),
+#'                end = as.Date('2014-12-31')
+#' )
+#'
+#' # Fit a reverse WTD with covariates -------------------------------------------------------------
+#'
+#' # load data
+#' df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+#'
+#' # make packsize a factor
+#' df$packsize <- as.factor(df$packsize)
+#'
+#' # fit the model
+#' fit1 <- wtdttt(data = df,
+#'                form = last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+#'                start = 0,
+#'                end = 1,
+#'                reverse = TRUE,
+#'                parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ packsize)
+#' )
+
+
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.varname=NA,
-                   subset=NA, na.action=na.pass, init=NULL, control=NULL, ...) {
+                   subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
+
 
   cpy <- as.data.table(data)
+
+
+  if(is.null(subset)) {
+
+    cpy <- cpy
+
+  } else if(!is.null(subset)) {
+
+    cpy <- cpy[eval(parse(text = subset)) ,]
+
+  }
+
 
   obs.name <- all.vars(form)[1]
 
@@ -145,13 +189,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
     stop(paste0("'", obs.name, "'", "is not in data"))
   }
 
-  # Check if the user provided dates (discrete) or numbers (continuous)
-  # XXXX do we need to record this in the fit object?
-  # XXXX function definition currently includes no 'conttime' parameter
-
-  # SG: should we let the user to supply the type of time variable (including conttime as a parameter of the function),
-  # or should we just derive it within the function as it is right now?
-
   if(class(cpy[[obs.name]])=="Date" && class(start)=="Date" && class(end)=="Date")
     conttime <- 0
   else if(class(cpy[[obs.name]])=="numeric" && class(start)=="numeric" && class(end)=="numeric")
@@ -165,7 +202,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
 
   ntot <- nrow(cpy)
 
-  # FIXME for now making a copy of 'data' and changing it
 
   if(reverse) {
 
@@ -191,15 +227,12 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   }
 
 
-  # should be calculate the proportion in a different way according to reverse parameter?
-  # [no, it's OK according to wtdttt.ado - Malcolm]
   nonprevend <- sum(cpy[, get(obs.name)] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
-  # do we want to generate a warning or an error?
   if(prp<0) warning("The proportion of incident users is a negative value")
 
-  lpinit <- qlogis(prp) # XXXX user cannot supply lpinit
+  lpinit <- qlogis(prp)
 
   # if the user hasn't supplied initial values, calculate some
 

@@ -10,10 +10,15 @@ NULL
 #' (WTD) model, either the probability of a person still being in treatment or
 #' the duration of observed prescription redemptions.
 #'
+#' #' @section Data format:
+#' Covariates in the data provided for wtdttt, used for estimation, must be in the prediction data as well -if used- with identical names
+#' The class of the covariate must be the same in the dataset used for estimation and in the one used for prediction - if different - i.e. packsize used as a factor.
+#'
 #' @param object a fitted object of class inheriting from "wtd"
 #' @param prediction.data An optional data frame in which to look for variables with
 #' which to predict. If omitted, the fitted values are used.
 #' @param type "dur" or "prob". Default "dur".
+#' @param iadmean logical; if T, mean duration is predicted.
 #' @param distrx For type="prob", a vector of dispensing gaps.
 #' @param quantile For type="dur", quantile of distribution. Default 0.8
 #' @param se.fit A switch indicating if standard errors are required

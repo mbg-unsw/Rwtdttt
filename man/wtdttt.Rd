@@ -11,8 +11,8 @@ wtdttt(
   start = NA,
   end = NA,
   reverse = F,
-  id,
-  subset = NA,
+  id = NA,
+  subset = NULL,
   na.action = na.pass,
   init = NULL,
   control = NULL,
@@ -95,3 +95,34 @@ If the redemption time data are of type date, a continuity correction will be
 applied automatically.
 }
 
+\examples{
+# Fit the WTD with a lognormal distribution ----------------------------------------------------
+
+# load data
+df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
+
+# fit the model
+fit1 <- wtdttt(data = df,
+               form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+               id = "pid",
+               start = as.Date('2014-01-01'),
+               end = as.Date('2014-12-31')
+)
+
+# Fit a reverse WTD with covariates -------------------------------------------------------------
+
+# load data
+df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+
+# make packsize a factor
+df$packsize <- as.factor(df$packsize)
+
+# fit the model
+fit1 <- wtdttt(data = df,
+               form = last_rxtime ~ dlnorm(logitp, mu, lnsigma),
+               start = 0,
+               end = 1,
+               reverse = TRUE,
+               parameters = list(logitp ~ packsize, mu ~ packsize, lnsigma ~ packsize)
+)
+}

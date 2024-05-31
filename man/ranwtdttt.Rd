@@ -5,34 +5,33 @@
 \title{Fit Waiting Time Distribution with random index times}
 \usage{
 ranwtdttt(
+  data,
   form,
   parameters = NULL,
-  data,
-  id,
-  start,
-  end,
+  start = NA,
+  end = NA,
   reverse = F,
-  nsamp = 4,
-  subset,
+  id.varname = NA,
+  nsamp = 1,
+  subset = NULL,
+  robust = T,
   na.action = na.pass,
-  init,
+  init = NULL,
   control = NULL,
   ...
 )
 }
 \arguments{
-\item{form}{an object of class "formula" (or one that can be coerced to that
-class): a symbolic description of the model to be fitted. The details of the
-model specification are given under 'Details'}
-
-\item{parameters}{model formulae for distribution parameters}
-
 \item{data}{an optional data frame, list or environment (or object coercible
 by as.data.frame to a data frame) containing the variables in the model. If
 not found in data, the variables are taken from environment(formula),
 typically the environment from which wtdttt is called.}
 
-\item{id}{the name of the variable that identifies distinct individuals}
+\item{form}{an object of class "formula" (or one that can be coerced to that
+class): a symbolic description of the model to be fitted. The details of the
+model specification are given under 'Details'}
+
+\item{parameters}{model formulae for distribution parameters}
 
 \item{start}{start of observation window}
 
@@ -40,10 +39,14 @@ typically the environment from which wtdttt is called.}
 
 \item{reverse}{logical; Fit the reverse waiting time distribution.}
 
+\item{id.varname}{the name of the variable that identifies distinct individuals}
+
 \item{nsamp}{number of samples to take.}
 
 \item{subset}{an optional vector specifying a subset of observations to be
 used in the fitting process.}
+
+\item{robust}{logical; compute a robust estimate of variance.}
 
 \item{na.action}{a function which indicates what should happen when the data
 contain NAs. The default is set by the na.action setting of options, and is

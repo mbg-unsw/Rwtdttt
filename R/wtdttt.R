@@ -50,7 +50,7 @@ NULL
 #' @param start start of observation window (date or real number)
 #' @param end end of observation window (date or real number)
 #' @param reverse logical; Fit the reverse waiting time distribution (default F).
-#' @param id.varname name of the id variable (optional)
+#' @param id name of the id variable (optional)
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process.
 #' @param na.action a function which indicates what should happen when the data
@@ -63,8 +63,9 @@ NULL
 #'
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom bbmle mle2
-#' @importFrom methods as
-#' @importFrom stats terms na.pass sd qlogis formula
+#' @importFrom methods as is
+#' @importFrom stats terms na.pass sd qlogis formula as.formula model.frame qnorm
+#' @importFrom data.table as.data.table setkeyv
 #' @export
 #'
 #' @examples
@@ -99,58 +100,77 @@ NULL
 #' )
 
 
-wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.varname=NA,
+wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                    subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
 
+  if(is.null(data) || (nrow(data)<1)) {
+    stop("data must be non-empty")
+  }
 
   cpy <- as.data.table(data)
 
-
-  if(is.null(subset)) {
-
-    cpy <- cpy
-
-  } else if(!is.null(subset)) {
-
-    cpy <- cpy[eval(parse(text = subset)) ,]
-
-  }
-
+  # define column names in data
+  data.names <- names(cpy)
 
   obs.name <- all.vars(form)[1]
 
-  cpy <- cpy[get(obs.name)>=start & get(obs.name)<=end]
+  if(is.null(obs.name)) {
+    stop("obstime variable must be specified in model formula")
+  }
 
-  if(is.na(id.varname)) {
+  if(!(obs.name %in% data.names)) {
+    stop(paste0("'", obs.name, "'", "is not in data"))
+  }
+
+  if(is(cpy[[obs.name]], "Date") && is(start, "Date") && is(end, "Date"))
+    conttime <- 0
+  else if(is(cpy[[obs.name]], "numeric") && is(start, "numeric") && is(end, "numeric"))
+    conttime <- 1
+  else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
+
+  if(!is.null(subset)) {
+
+    cpy <- cpy[eval(parse(text = subset)) ,] # XXXX See https://adv-r.hadley.nz/evaluation.html 20.4.3
+
+  }
+
+  cpy <- cpy[cpy[[obs.name]]>=start & cpy[[obs.name]]<=end]
+
+  if(is.na(id)) {
 
     warning("The id variable was not provided so all data will be used, considering there is one row per subject")
 
-  } else if(!is.na(id.varname)) {
+  } else if(!is.na(id)) {
 
-    if(length(id.varname)>1) {
+    if(length(id)>1) {
       stop("id colname must be a single element")
     }
 
-    if(!(id.varname %in% names(cpy))) {
-      stop(paste0("'", id.varname, "'", "is not in data"))
+    if(!(id %in% names(cpy))) {
+      stop(paste0("'", id, "'", "is not in data"))
     }
 
-    if (length(unique(cpy[, get(id.varname)]))!=dim(cpy)[1] & reverse==FALSE) {
+    # XXXX probably no need to do this check
+    if (nrow(unique(cpy[, id, with=F]))!=nrow(cpy)) {
+      if(reverse==FALSE) {
 
-      cpy <- cpy[, .SD[which.min(get(obs.name))], by = get(id.varname)]
+        kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+        cpy <- cpy[, .SD[1L], by = ids, env=list(ids=id)]
 
-    } else if (length(unique(cpy[, get(id.varname)]))!=dim(cpy)[1] & reverse==TRUE) {
+      } else  {
 
-      cpy <- cpy[, .SD[which.max(get(obs.name))], by = get(id.varname)]
+        kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+        cpy <- cpy[, .SD[.N], by = ids, env=list(ids=id)]
 
-      # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
-    } else if ((length(unique(cpy[, get(id.varname)]))==dim(cpy)[1]) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=0) & (sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)!=dim(cpy)[1])) {
+        # XXXX this will never happen, out-of-range data were filtered out earlier
+        # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
+      }} else if ((sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=0) & (sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=nrow(cpy))) {
 
       # throw a warning
       warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
 
       # if the dataset provided has just one row per subject, and ALL dates are out of the window defined by start and end
-    } else if ((length(unique(cpy[, get(id.varname)]))==dim(cpy)[1]) & sum(cpy[, get(obs.name)<start] | cpy[, get(obs.name)]>end)!=0 & sum(cpy[, get(obs.name)]<start | cpy[, get(obs.name)]>end)==dim(cpy)[1]) {
+    } else if ((sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=0 & sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)==nrow(cpy))) {
 
       # throw an error
       stop("All dates are out of the window defined by start and end")
@@ -158,7 +178,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
     }
 
   }
-
 
   # parse 'form' to determine the distribution in use and test if it
   # is a supported one, otherwise error
@@ -174,26 +193,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
 
   # parse 'parameters' to test if they match 'form', otherwise error
 
-  # define column names in data
-  data.names <- names(cpy)
-
-  if(is.null(cpy) || (nrow(cpy)<1)) {
-    stop("data must be non-empty")
-  }
-
-  if(is.null(obs.name)) {
-    stop("obstime variable must be specified")
-  }
-
-  if(!(obs.name %in% data.names)) {
-    stop(paste0("'", obs.name, "'", "is not in data"))
-  }
-
-  if(class(cpy[[obs.name]])=="Date" && class(start)=="Date" && class(end)=="Date")
-    conttime <- 0
-  else if(class(cpy[[obs.name]])=="numeric" && class(start)=="numeric" && class(end)=="numeric")
-    conttime <- 1
-  else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
 
   if(!conttime)
     delta <- as.double(end - start, units="days") + 1
@@ -206,9 +205,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   if(reverse) {
 
     if(!conttime)
-      cpy[, obs.time := 0.5 + as.double(end - get(obs.name), units="days")]
+      cpy[, obs.time := 0.5 + as.double(end - cpy[[obs.name]], units="days")]
     else
-      cpy[, obs.time := end - get(obs.name)]
+      cpy[, obs.time := end - cpy[[obs.name]]]
 
     cpy <- cpy[,(obs.name):=NULL]
     setnames(cpy, "obs.time", obs.name)
@@ -217,9 +216,9 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   } else {
 
     if(!conttime)
-      cpy[, obs.time := 0.5 + as.double(get(obs.name) - start, units="days")]
+      cpy[, obs.time := 0.5 + as.double(cpy[[obs.name]] - start, units="days")]
     else
-      cpy[, obs.time := get(obs.name) - start]
+      cpy[, obs.time := cpy[[obs.name]] - start]
 
     cpy <- cpy[,(obs.name):=NULL]
     setnames(cpy, "obs.time", obs.name)
@@ -227,7 +226,7 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   }
 
 
-  nonprevend <- sum(cpy[, get(obs.name)] > (delta * 2/3))
+  nonprevend <- sum(cpy[, obs.name, with=F] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
   if(prp<0) warning("The proportion of incident users is a negative value")
@@ -239,20 +238,20 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   if(is.null(init)) {
     if(dist == "lnorm") {
 
-      muinit <- mean(log(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta]))
-      lnsinit <- log(sd(log(cpy[, get(obs.name)][cpy[, get(obs.name)] < 0.5 * delta])))
+      muinit <- mean(log(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta]))
+      lnsinit <- log(sd(log(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit, delta=delta)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
     } else if(dist == "exp") {
 
-      lnbetainit <- log(1/(mean(cpy[, get(obs.name)][cpy[, get(obs.name)]< 0.5 * delta])))
+      lnbetainit <- log(1/(mean(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
 
     }
@@ -268,6 +267,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.
   out@delta <- delta
   out@dist <- dist
   out@depvar <- obs.name
-  out@idvar <- if(is.na(id.varname)) character(0) else id.varname
+  out@idvar <- if(is.na(id)) character(0) else id
   return(out)
 }

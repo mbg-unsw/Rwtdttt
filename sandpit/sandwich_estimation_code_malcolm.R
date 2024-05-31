@@ -11,7 +11,7 @@ tmp$packcat <- factor(tmp$packsize)
 
 delta <- 1
 
-dwtdttt <- function(x, logitp, mu, lnsigma, log = TRUE) {
+dlnorm2 <- function(x, logitp, mu, lnsigma, log = TRUE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
   sigma <- exp(lnsigma)
@@ -30,7 +30,7 @@ dwtdttt <- function(x, logitp, mu, lnsigma, log = TRUE) {
 }
 
 
-fit1 <- mle2(rxtime ~ dwtdttt(logitp, mu, lnsigma),
+fit1 <- mle2(rxtime ~ dlnorm2(logitp, mu, lnsigma),
              parameters = list(logitp ~ packcat, mu ~ packcat, lnsigma ~ packcat),
              start = list(logitp = 0, mu = log(delta/5), lnsigma = 0),
              data = tmp)
@@ -45,7 +45,7 @@ score_mat <- t(sapply(1:nrow(tmp),
 
                           mm <- model.matrix(~packcat, data=tmp)[i,]
 
-                          dwtdttt(as.numeric(tmp[i, "rxtime"]),
+                          dlnorm2(as.numeric(tmp[i, "rxtime"]),
 
                                   logitp=t(x[1:2]) %*% mm,
 

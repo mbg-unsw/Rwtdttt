@@ -6,7 +6,7 @@
 \usage{
 \S4method{predict}{wtd}(
   object,
-  newdata = NULL,
+  prediction.data = NULL,
   type = "dur",
   iadmean = F,
   distrx = NULL,
@@ -19,10 +19,12 @@
 \arguments{
 \item{object}{a fitted object of class inheriting from "wtd"}
 
-\item{newdata}{An optional data frame in which to look for variables with
+\item{prediction.data}{An optional data frame in which to look for variables with
 which to predict. If omitted, the fitted values are used.}
 
 \item{type}{"dur" or "prob". Default "dur".}
+
+\item{iadmean}{logical; if T, mean duration is predicted.}
 
 \item{distrx}{For type="prob", a vector of dispensing gaps.}
 
@@ -42,4 +44,9 @@ A vector of predictions
 Make predictions based on an estimated parametric Waiting Time Distribution
 (WTD) model, either the probability of a person still being in treatment or
 the duration of observed prescription redemptions.
+}
+\details{
+#' @section Data format:
+Covariates in the data provided for wtdttt, used for estimation, must be in the prediction data as well -if used- with identical names
+The class of the covariate must be the same in the dataset used for estimation and in the one used for prediction - if different - i.e. packsize used as a factor.
 }

@@ -42,15 +42,15 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
                       nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {
 
 
-  # if(!subset) {
-  #
-  #   data <- data
-  #
-  # } else if(subset) {
-  #
-  #   data <- data[subset]
-  #
-  # }
+  if(is.null(subset)) {
+
+    cpy <- cpy
+
+  } else if(!is.null(subset)) {
+
+    cpy <- cpy[eval(parse(text = subset)) ,]
+
+  }
 
 
   # creation of shifted dates

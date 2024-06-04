@@ -2,6 +2,11 @@
 
 # Register a 'wtd' class, inheriting from 'mle2'
 
+#' An S4 class representing the result of maximum likelihood estimation for a WTD
+#'
+#' This class encapsulates results of maximum likelihood estimation for a
+#' waiting time distribution.
+#'
 #' @slot delta value of the delta parameter
 #' @slot dist name of the WTD distribution family: "lnorm", "weib" or "exp"
 #' @slot depvar name of the dependent variable

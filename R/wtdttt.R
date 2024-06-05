@@ -134,6 +134,10 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
     cpy <- cpy[eval(parse(text = subset)) ,] # XXXX See https://adv-r.hadley.nz/evaluation.html 20.4.3
 
+    if(nrow(cpy)<1) {
+      stop("data must be non-empty")
+    }
+
   }
 
   cpy <- cpy[cpy[[obs.name]]>=start & cpy[[obs.name]]<=end]

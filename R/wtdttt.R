@@ -52,7 +52,9 @@ NULL
 #' @param reverse logical; Fit the reverse waiting time distribution (default F).
 #' @param id name of the id variable (optional)
 #' @param subset an optional vector specifying a subset of observations to be
-#' used in the fitting process.
+#' used in the fitting process. If the variable for which you want to create the
+#' subset is a factor, it is necessary to use both double and single quotation marks
+#' in the following way: i.e., subset = 'sex=="F"'
 #' @param na.action a function which indicates what should happen when the data
 #' contain NAs. The default is set by the na.action setting of options, and is
 #' na.fail if that is unset. The 'factory-fresh' default is na.omit. Another

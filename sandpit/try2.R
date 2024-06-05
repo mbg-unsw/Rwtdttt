@@ -37,7 +37,7 @@ fit2 <- wtdttt(data = df,
 summary(fit2)
 plot(fit2)
 
-predict(fit2, type=="prob")
+predict(fit2, type="prob")
 
 # ... and with Exponential
 fit3 <- wtdttt(data = df,
@@ -67,10 +67,11 @@ summary(fit1)
 ## 2) Reverse WTD analysis with covariates (continuous time)----
 df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
 
-### fit waiting time distribution (exp) ----
+### fit waiting time distribution (exp)
+# XXXX need to change wtdttt(... subset= ...) to use non-standard evaluation
 fit3 <- wtdttt(data = df,
                last_rxtime ~ dexp(logitp, lnbeta),
-               start = 0, end = 1, reverse = T, subset = "packsize" ==200
+               start = 0, end = 1, reverse = T, subset = "packsize==200"
 )
 
 summary(fit3)

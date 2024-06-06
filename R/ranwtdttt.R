@@ -19,7 +19,7 @@ NULL
 #' by as.data.frame to a data frame) containing the variables in the model. If
 #' not found in data, the variables are taken from environment(formula),
 #' typically the environment from which wtdttt is called.
-#' @param id.varname the name of the variable that identifies distinct individuals
+#' @param id the name of the variable that identifies distinct individuals
 #' @param start start of observation window
 #' @param end end of observation window
 #' @param reverse logical; Fit the reverse waiting time distribution.
@@ -38,9 +38,11 @@ NULL
 #' @return ranwtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom data.table data.table setDT := .N .SD as.data.table setnames
 #' @export
-ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id.varname=NA,
+ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                       nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {
 
+# XXXX add error checking code from wtdttt()
+# XXXX note this function accepts date data only
 
   if(is.null(subset)) {
 
@@ -52,33 +54,34 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   }
 
+  setDT(data)
 
   # creation of shifted dates
 
     obs.name <- all.vars(form)[1]
     delta <- as.numeric(end - start)
 
+    obs.ind <- which(colnames(data)==obs.name)
 
     f <- function() {
 
       if (!reverse) {
 
-        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) >= indda & get(obs.name) <= (indda + delta),][, .SD[which.min(get(obs.name))], by = id.varname][, rxshift := get(obs.name) - (indda-start)]
+        data[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta),][, .SD[which.min(.SD[[obs.ind]])], by = id][, rxshift := .SD[[obs.ind]] - (indda-start)]
 
       } else {
 
-        data <- setDT(data)[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][get(obs.name) <= indda & get(obs.name) >= (indda - delta),][, .SD[which.max(get(obs.name))], by = id.varname][, rxshift := get(obs.name) + (end - indda)]
+        data[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta),][, .SD[which.max(.SD[[obs.ind]])], by = id][, rxshift := .SD[[obs.ind]] + (end - indda)]
 
       }
 
 
     }
 
-
   # bind multiple copies of dataframes
   tmp <- do.call(rbind, replicate(nsamp, f(), simplify = FALSE))
 
-
+  # XXXX do formula rewrite like in wtdttt() ?
   disttmp <- attr(terms(form, specials=c("dlnorm", "dweib", "dexp")), "specials")
 
   dist <- if(isTRUE(disttmp$dlnorm==2)) "lnorm" # need isTRUE() as value can be NULL
@@ -100,8 +103,9 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   } else stop("model must use one of dlnorm, dweib or dexp")
 
+  # XXXX shouldn't apply subset both here and above
 
-  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, id.varname = id.varname, subset = subset, init = init, data = tmp)
+  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, id = id, subset = subset, init = init, data = tmp)
 
   if (!robust) {
 

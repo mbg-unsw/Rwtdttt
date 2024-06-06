@@ -44,11 +44,11 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   if(is.null(subset)) {
 
-    cpy <- cpy
+    data <- data
 
   } else if(!is.null(subset)) {
 
-    cpy <- cpy[eval(parse(text = subset)) ,]
+    data <- data[eval(parse(text = subset)) ,]
 
   }
 

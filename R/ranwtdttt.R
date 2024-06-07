@@ -61,20 +61,28 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
     obs.name <- all.vars(form)[1]
     delta <- as.numeric(end - start)
 
+    # define 'id' as key so it can be used to assign random offsets
+    kc <- c(id, obs.name); setkeyv(data, kc) # XXXX consider using indexing
+
     obs.ind <- which(colnames(data)==obs.name)
+    .id <- c(id)
+
+    off <- data.table(id=unique(data[[id]]), key=c("id"))
 
     f <- function() {
 
+      # all obs with the same id should get the same random offset
+      off[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)]
+
       if (!reverse) {
 
-        data[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta),][, .SD[which.min(.SD[[obs.ind]])], by = id][, rxshift := .SD[[obs.ind]] - (indda-start)]
+        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta),][, .SD[1L], by=.id][, rxshift := .SD[[obs.ind]] - (indda-start)]
 
       } else {
 
-        data[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta),][, .SD[which.max(.SD[[obs.ind]])], by = id][, rxshift := .SD[[obs.ind]] + (end - indda)]
+        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta),][, .SD[.N], by=.id][, rxshift := .SD[[obs.ind]] + (end - indda)]
 
       }
-
 
     }
 
@@ -104,8 +112,9 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
   } else stop("model must use one of dlnorm, dweib or dexp")
 
   # XXXX shouldn't apply subset both here and above
+  # XXXX note, do not pass 'id' to wtdttt() as when nsamp > 1 *all* copies of data should be used
 
-  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, id = id, subset = subset, init = init, data = tmp)
+  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, init = init, data = tmp)
 
   if (!robust) {
 

@@ -5,7 +5,7 @@
 \alias{wtd-class}
 \title{An S4 class representing the result of maximum likelihood estimation for a WTD}
 \description{
-This class encapsulates results of maximum likelihood estimateion for a
+This class encapsulates results of maximum likelihood estimation for a
 waiting time distribution.
 }
 \section{Slots}{

@@ -12,6 +12,7 @@ wtdttt(
   end = NA,
   reverse = F,
   id = NA,
+  preprocess = T,
   subset = NULL,
   na.action = na.pass,
   init = NULL,
@@ -39,8 +40,13 @@ model specification are given under 'Details'}
 
 \item{id}{name of the id variable (optional)}
 
+\item{preprocess}{logical; Pre-process the data to limit to one observation
+per id. If id is omitted, defaults to F (default T).}
+
 \item{subset}{an optional vector specifying a subset of observations to be
-used in the fitting process.}
+used in the fitting process. If the variable for which you want to create the
+subset is a factor, it is necessary to use both double and single quotation marks
+in the following way: i.e., subset = 'sex=="F"'}
 
 \item{na.action}{a function which indicates what should happen when the data
 contain NAs. The default is set by the na.action setting of options, and is

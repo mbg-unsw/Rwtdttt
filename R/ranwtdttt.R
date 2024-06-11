@@ -37,6 +37,7 @@ NULL
 #'
 #' @return ranwtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom data.table data.table setDT := .N .SD as.data.table setnames
+#' @importFrom stats runif
 #' @export
 ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                       nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {

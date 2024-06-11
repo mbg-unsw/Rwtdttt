@@ -11,7 +11,7 @@ ranwtdttt(
   start = NA,
   end = NA,
   reverse = F,
-  id.varname = NA,
+  id = NA,
   nsamp = 1,
   subset = NULL,
   robust = T,
@@ -39,7 +39,7 @@ model specification are given under 'Details'}
 
 \item{reverse}{logical; Fit the reverse waiting time distribution.}
 
-\item{id.varname}{the name of the variable that identifies distinct individuals}
+\item{id}{the name of the variable that identifies distinct individuals}
 
 \item{nsamp}{number of samples to take.}
 

@@ -72,15 +72,15 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
     f <- function() {
 
       # all obs with the same id should get the same random offset
-      off[, indda := sample(as.Date(as.Date(start):as.Date(end)), .N, replace=TRUE)]
+      off[, indda := start + floor(runif(n=nrow(off), max=delta+1))]
 
       if (!reverse) {
 
-        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta),][, .SD[1L], by=.id][, rxshift := .SD[[obs.ind]] - (indda-start)]
+        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta), .SD[1L], by=.id][, rxshift := .SD[[obs.ind]] - (indda-start)]
 
       } else {
 
-        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta),][, .SD[.N], by=.id][, rxshift := .SD[[obs.ind]] + (end - indda)]
+        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta), .SD[.N], by=.id][, rxshift := .SD[[obs.ind]] + (end - indda)]
 
       }
 
@@ -112,9 +112,12 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
   } else stop("model must use one of dlnorm, dweib or dexp")
 
   # XXXX shouldn't apply subset both here and above
-  # XXXX note, do not pass 'id' to wtdttt() as when nsamp > 1 *all* copies of data should be used
+  # note, pass 'id' to wtdttt() but set preprocess=F
+  # as when nsamp > 1 *all* copies of data should be used
 
-  out <- wtdttt(form = newform, parameters = parameters, start = start, end = end, reverse = reverse, init = init, data = tmp)
+  out <- wtdttt(form = newform, parameters = parameters,
+                start = start, end = end, reverse = reverse, id = id,
+                preprocess = F, init = init, data = tmp)
 
   if (!robust) {
 

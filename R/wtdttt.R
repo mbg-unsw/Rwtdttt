@@ -51,6 +51,8 @@ NULL
 #' @param end end of observation window (date or real number)
 #' @param reverse logical; Fit the reverse waiting time distribution (default F).
 #' @param id name of the id variable (optional)
+#' @param preprocess logical; Pre-process the data to limit to one observation
+#' per id. If id is omitted, defaults to F (default T).
 #' @param subset an optional vector specifying a subset of observations to be
 #' used in the fitting process. If the variable for which you want to create the
 #' subset is a factor, it is necessary to use both double and single quotation marks
@@ -103,7 +105,7 @@ NULL
 
 
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
-                   subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
+                   preprocess=T, subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
 
   if(is.null(data) || (nrow(data)<1)) {
     stop("data must be non-empty")
@@ -145,8 +147,11 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   if(is.na(id)) {
 
     warning("The id variable was not provided so all data will be used, considering there is one row per subject")
+    preprocess=F
 
-  } else if(!is.na(id)) {
+  }
+
+  if(preprocess) {
 
     if(length(id)>1) {
       stop("id colname must be a single element")

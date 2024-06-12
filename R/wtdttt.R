@@ -107,6 +107,7 @@ NULL
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                    preprocess=T, subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
 
+
   if(is.null(data) || (nrow(data)<1)) {
     stop("data must be non-empty")
   }
@@ -274,10 +275,16 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
               start = init, data = cpy)
 
+  start <- as.character(start)
+  end <- as.character(end)
+
   out <- as(out, "wtd")
   out@delta <- delta
+  out@start <- start
+  out@end <- end
   out@dist <- dist
   out@depvar <- obs.name
   out@idvar <- if(is.na(id)) character(0) else id
+  out@isreverse <- reverse
   return(out)
 }

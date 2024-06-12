@@ -20,6 +20,6 @@
 #'
 setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
                                          depvar="character", idvar="character",
-                                         isreverse="logical", start="",
-                                         end=""))
+                                         isreverse="logical", start="character",
+                                         end="character"))
 

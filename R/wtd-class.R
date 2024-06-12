@@ -8,6 +8,8 @@
 #' waiting time distribution.
 #'
 #' @slot delta value of the delta parameter
+#' @slot start window's start
+#' @slot end window's end
 #' @slot dist name of the WTD distribution family: "lnorm", "weib" or "exp"
 #' @slot depvar name of the dependent variable
 #' @slot idvar (optional) name of the id variable
@@ -18,5 +20,6 @@
 #'
 setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
                                          depvar="character", idvar="character",
-                                         isreverse="logical"))
+                                         isreverse="logical", start="",
+                                         end=""))
 

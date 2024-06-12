@@ -33,6 +33,38 @@ setMethod("predict", "wtd",
           function(object, prediction.data=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
+
+       if(!is.null(distrx)) {
+
+
+
+            if(is(distrx, "Date"))
+              conttime <- 0
+            else if(is(distrx, "numeric"))
+              conttime <- 1
+
+
+            if(object@isreverse) {
+
+              if(!conttime)
+                distrx <- 0.5 + as.double(as.Date(object@end) - distrx, units="days")
+              else
+                distrx <- as.numeric(object@end) - distrx
+
+
+            } else {
+
+              if(!conttime)
+                distrx <- 0.5 + as.double(distrx - as.Date(object@start), units="days")
+              else
+                distrx <- distrx - as.numeric(object@start)
+
+            }
+
+       }
+
+            ##################
+
             parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
 
             # !! parnames e vars are the same (keep only one)

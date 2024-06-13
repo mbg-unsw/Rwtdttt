@@ -21,9 +21,15 @@ This implementation of estimation procedures mimics that found in the correspond
 
 ## More
 
+### Known bugs
+
+Robust variance calculation, used by default in the randwtdttt() function, is very slow. We are working on improving this.
+
 ### Bug reports, feature requests etc.
 
 This is a young project with some rough edges. Please submit any bug reports, feature request and comments as a Github issue.
+
+Contributions are welcome. Please open an issue or submit a PR for review.
 
 ### Credits
 

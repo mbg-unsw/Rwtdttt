@@ -5,6 +5,7 @@ library(Rwtdttt)
 library(haven)
 library(data.table)
 library(tidyverse)
+library(rlang)
 
 # load data
 # Dataset contains one observation per person, first dispensing for 2014
@@ -16,8 +17,8 @@ df <- cbind(df, sex = sample(c("M","F"), dim(df)[1], replace = T))
 fit1 <- wtdttt(data = df,
                rx1time ~ dlnorm(logitp, mu, lnsigma),
                id = "pid",
-               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'))#, subset = "sex=='F'"
-               # )
+               start = as.Date('2014-01-01'), end = as.Date('2014-12-31'), subset = sex=='F'
+               )
 
 # N.B. We get an error if we set reverse = T because this dataset is created having the first dispensing for 2014
 

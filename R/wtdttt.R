@@ -133,9 +133,11 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     conttime <- 1
   else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
 
-  if(!is.null(subset)) {
+  if(!is.null(deparse(substitute(subset)))) {
 
-    cpy <- cpy[eval(parse(text = subset)) ,] # XXXX See https://adv-r.hadley.nz/evaluation.html 20.4.3
+      rows <- enquo(subset)
+      rows_val <- eval_tidy(rows, cpy)
+      cpy <- cpy[rows_val ,]
 
     if(nrow(cpy)<1) {
       stop("data must be non-empty")

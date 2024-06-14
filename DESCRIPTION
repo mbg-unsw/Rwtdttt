@@ -21,6 +21,7 @@ Imports:
     haven,
     methods,
     graphics,
+    rlang,
     stats,
     numDeriv
 Suggests: 

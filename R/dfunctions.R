@@ -31,7 +31,7 @@ dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 
     return(density=d)
 
-    if(any(d<0 | d>1)) warning("density values not between 0 and 1")
+    if(any(d<0)) warning("density values not positive")
 }
 
 

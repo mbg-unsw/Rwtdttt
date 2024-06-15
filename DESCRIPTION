@@ -16,7 +16,7 @@ Roxygen: list(markdown = TRUE)
 Imports: 
     bbmle,
     class,
-    data.table,
+    data.table (>= 1.15.0),
     dplyr,
     haven,
     methods,

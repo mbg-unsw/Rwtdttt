@@ -13,10 +13,16 @@ waiting time distribution.
 \describe{
 \item{\code{delta}}{value of the delta parameter}
 
+\item{\code{start}}{window's start}
+
+\item{\code{end}}{window's end}
+
 \item{\code{dist}}{name of the WTD distribution family: "lnorm", "weib" or "exp"}
 
 \item{\code{depvar}}{name of the dependent variable}
 
 \item{\code{idvar}}{(optional) name of the id variable}
+
+\item{\code{isreverse}}{logical; indicates whether a forward or backward distribution is used}
 }}
 

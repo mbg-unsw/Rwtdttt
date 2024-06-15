@@ -70,6 +70,7 @@ NULL
 #' @importFrom methods as is
 #' @importFrom stats terms na.pass sd qlogis formula as.formula model.frame qnorm
 #' @importFrom data.table as.data.table setkeyv
+#' @importFrom rlang enquo eval_tidy
 #' @export
 #'
 #' @examples

@@ -45,15 +45,18 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 # XXXX add error checking code from wtdttt()
 # XXXX note this function accepts date data only
 
-  if(is.null(subset)) {
+  if(!is.null(substitute(subset))) {
 
-    data <- data
+    rows <- enquo(subset)
+    rows_val <- eval_tidy(rows, data)
+    data <- data[rows_val ,]
 
-  } else if(!is.null(subset)) {
-
-    data <- data[eval(parse(text = subset)) ,]
+    if(nrow(data)<1) {
+      stop("data must be non-empty")
+    }
 
   }
+
 
   setDT(data)
 

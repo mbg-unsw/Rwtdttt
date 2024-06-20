@@ -1,3 +1,7 @@
-* Add/fix test cases
-* Convert example datasets into R format
-* Add summary/print methods for wtd class
+* add/fix test cases
+* convert example datasets into R format
+* add summary/print methods for wtd class
+* back transform data to original date range for plot method
+* improve plot output for plot method
+* speed up robust variance estimator
+* benchmark and optimise

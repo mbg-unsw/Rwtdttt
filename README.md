@@ -38,6 +38,7 @@ The package was developed by:
 * Sabrina Giometto
 * Henrik Støvring
 * Malcolm Gillies
+* Olga Paoletti
 
 ### License
 

@@ -8,6 +8,7 @@ library(readxl)
 
 # load data
 # test data for sandwich from Henrik
+
 tmp <- haven::read_dta(system.file("extdata", "score_ex.dta", package="Rwtdttt"))
 
 tmp$packcat <- factor(tmp$packsize)

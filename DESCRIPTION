@@ -2,7 +2,7 @@ Type: Package
 Package: Rwtdttt
 Title: Parametric Waiting Time Distribution estimation
 Version: 0.1.0
-Author: Sabrina Giometto, Malcolm Gillies, Henrik Støvring
+Author: Sabrina Giometto, Malcolm Gillies, Olga Paoletti, Henrik Støvring
 Maintainer: Henrik Støvring <hstov@health.sdu.dk>
 Description: Estimation of prescription durations and treatment
     probability based on the parametric Waiting Time Distribution.

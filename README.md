@@ -19,6 +19,23 @@ The parametric Waiting Time Distribution has been developed to provide a data-dr
 
 This implementation of estimation procedures mimics that found in the corresponding Stata package (wtdttt). The model is fit using maximum likelihood estimation.
 
+## Example
+
+```R
+library(haven)
+df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
+
+fit_r <- ranwtdttt(data = df,
+                   rxdate ~ dlnorm(logitp, mu, lnsigma),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = T, robust = F
+)
+
+summary(fit_r)
+```
+
 ## More
 
 ### Known bugs

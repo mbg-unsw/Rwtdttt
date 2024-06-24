@@ -26,7 +26,7 @@ summary(fit1)
 
 plot(fit1)
 
-predict(fit1, type = "prob", distrx = df$rx1time)
+predict(fit1, type = "prob", distrx = df$rx1time[which(df$sex=="F")])
 
 # repeat with Weibull
 # can omit the "id" parameter as the data are pre-processed
@@ -40,7 +40,7 @@ fit2 <- wtdttt(data = df,
 summary(fit2)
 plot(fit2)
 
-predict(fit2, type="prob")
+predict(fit2, type="prob", distrx = df$rx1time)
 
 # ... and with Exponential
 fit3 <- wtdttt(data = df,
@@ -74,7 +74,7 @@ df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdtt
 # XXXX need to change wtdttt(... subset= ...) to use non-standard evaluation
 fit3 <- wtdttt(data = df,
                last_rxtime ~ dexp(logitp, lnbeta),
-               start = 0, end = 1, reverse = T, subset = "packsize==200"
+               start = 0, end = 1, reverse = T, subset = packsize==200
 )
 
 summary(fit3)
@@ -172,7 +172,7 @@ df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdtt
 
 df <- df %>% arrange(packsize, distlast)
 prob_pred <- predict(fit1, type = "prob", prediction.data = df, distrx = df$distlast)
-plot(df$distlast, prob_pred, type = "l")
+
 ggplot(data = df, aes(x=distlast, y=prob_pred, group = packsize)) +
   geom_line() +
   geom_point()
@@ -267,7 +267,8 @@ fit1 <- wtdttt(data = df,
 
 df <- haven::read_dta(system.file("extdata", "lastRx_index.dta", package="Rwtdttt"))
 
-df <- df %>% mutate(packsize = as.factor(packsize))
+df <- df %>% mutate(packsize = as.factor(packsize),
+                    sex = as.factor(sample(c("F","M"), dim(df)[1], replace = T)))
 
 predict(fit1, type = "dur", quantile = 0.9, prediction.data = df)
 

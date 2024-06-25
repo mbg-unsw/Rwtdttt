@@ -35,6 +35,7 @@ fit_r <- ranwtdttt(data = df,
 
 summary(fit_r)
 ```
+Please see [examples.R](sandpit/examples.R) for more.
 
 ## More
 
@@ -56,6 +57,8 @@ The package was developed by:
 * Henrik Støvring
 * Malcolm Gillies
 * Olga Paoletti
+
+Thank you to Jesper Hallas for kindly allowing us to reproduce the synthetic dispensing data in the `drugpakud.dta` dataset.
 
 ### License
 

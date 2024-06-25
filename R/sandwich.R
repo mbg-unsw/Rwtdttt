@@ -43,77 +43,67 @@ sand_vcov <- function(fit) {
       vpos[[vname]] <- which(parnames==vname)
     }
 
-    score_mat <- t(sapply(1:length(fit@data[[1]]),
 
-                        function(i) {
+    if(fit@dist=="lnorm") {
 
-                          logl <- function(x) {
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
+      mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(fit@data), drop=F)
+      mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(fit@data), drop=F)
 
-                            if(fit@dist=="lnorm") {
+      myenv <- new.env()
+      myenv$logitp <- mm1 %*% fit@coef[1:ncol(mm1)]
+      myenv$mu <- mm2 %*% fit@coef[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]
+      myenv$lnsigma <- mm3%*% fit@coef[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]
+      myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
-                              # FIXME this is very ugly
-                              # XXXX can we use fit@minuslogl somehow instead?
+      sc1 <- diag(attr(numericDeriv(
+        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("logitp"), myenv), "gradient"))
+      sc2 <- diag(attr(numericDeriv(
+        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("mu"), myenv), "gradient"))
+      sc3 <- diag(attr(numericDeriv(
+        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("lnsigma"), myenv), "gradient"))
 
+      score_mat <- cbind(mm1 * sc1, mm2 * sc2, mm3 * sc3)
 
-                              mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))[i,,drop=F]
-                              mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(fit@data), drop=F)[i,,drop=F]
-                              mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(fit@data), drop=F)[i,,drop=F]
+    } else if(fit@dist=="weib") {
 
-                              dlnorm(as.numeric(getElement(fit@data, fit@depvar)[i]),
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
+      mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(fit@data))
+      mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))
 
-                                      logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
+      myenv <- new.env()
+      myenv$logitp <- mm1 %*% fit@coef[1:ncol(mm1)]
+      myenv$lnalpha <- mm2 %*% fit@coef[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]
+      myenv$lnbeta <- mm3%*% fit@coef[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]
+      myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
-                                      mu=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
+      sc1 <- diag(attr(numericDeriv(
+        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("logitp"), myenv), "gradient"))
+      sc2 <- diag(attr(numericDeriv(
+        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("lnbeta"), myenv), "gradient"))
+      sc3 <- diag(attr(numericDeriv(
+        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("lnalpha"), myenv), "gradient"))
 
-                                      lnsigma=mm3 %*% matrix(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]),
+      score_mat <- cbind(mm1 * sc1, mm2 * sc2, mm3 * sc3)
 
-                                      delta=fit@delta,
+    } else if(fit@dist=="exp") {
 
-                                      log=T)
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
+      mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))
 
-                          } else if(fit@dist=="weib") {
+      myenv <- new.env()
+      myenv$logitp <- mm1 %*% fit@coef[1:ncol(mm1)]
+      myenv$lnbeta <- mm2 %*% fit@coef[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]
+      myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
-                            mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))[i,,drop=F]
-                            mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(fit@data))[i,,drop=F]
-                            mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))[i,,drop=F]
+      sc1 <- diag(attr(numericDeriv(
+        quote(dexp(x, logitp, lnbeta, log=T)), c("logitp"), myenv), "gradient"))
+      sc2 <- diag(attr(numericDeriv(
+        quote(dexp(x, logitp, lnbeta, log=T)), c("lnbeta"), myenv), "gradient"))
 
-                            dweib(as.numeric(getElement(fit@data, fit@depvar)[i]),
+      score_mat <- cbind(mm1 * sc1, mm2 * sc2)
 
-                                   logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
-
-                                   lnalpha=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
-
-                                   lnbeta=mm3 %*% matrix(x[(ncol(mm1)+ncol(mm2)+1):(ncol(mm1)+ncol(mm2)+ncol(mm3))]),
-
-                                   delta=fit@delta,
-
-                                   log=T)
-
-                         } else if(fit@dist=="exp") {
-
-                          mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))[i,,drop=F]
-                          mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))[i,,drop=F]
-
-                          dexp(as.numeric(getElement(fit@data, fit@depvar)[i]),
-
-                                 logitp=mm1 %*% matrix(x[1:ncol(mm1)]),
-
-                                 lnbeta=mm2 %*% matrix(x[(ncol(mm1)+1):(ncol(mm1)+ncol(mm2))]),
-
-                                 delta=fit@delta,
-
-                                 log=T)
-
-                        }
-                      }
-
-
-
-                          grad(logl, fit@coef)
-
-                        }
-
-  ))
+    }
 
   colnames(score_mat) <- names(fit@coef)
 

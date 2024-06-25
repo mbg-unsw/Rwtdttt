@@ -19,11 +19,31 @@ The parametric Waiting Time Distribution has been developed to provide a data-dr
 
 This implementation of estimation procedures mimics that found in the corresponding Stata package (wtdttt). The model is fit using maximum likelihood estimation.
 
+## Example
+
+```R
+library(haven)
+df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
+
+fit_r <- ranwtdttt(data = df,
+                   rxdate ~ dlnorm(logitp, mu, lnsigma),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = T, robust = F
+)
+
+summary(fit_r)
+```
+Please see [examples.R](sandpit/examples.R) for more.
+
 ## More
 
 ### Known bugs
 
 Robust variance calculation, used by default in the randwtdttt() function, is very slow. We are working on improving this.
+
+Other planned improvements are listed in [TODO](sandpit/TODO)
 
 ### Bug reports, feature requests etc.
 
@@ -39,6 +59,8 @@ The package was developed by:
 * Henrik Støvring
 * Malcolm Gillies
 * Olga Paoletti
+
+Thank you to Jesper Hallas for kindly allowing us to reproduce the synthetic dispensing data in the `drugpakud.dta` dataset.
 
 ### License
 

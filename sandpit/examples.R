@@ -1,7 +1,7 @@
 # Quick test
 
 library(bbmle)
-library(Rwtdttt)
+#library(Rwtdttt)
 library(haven)
 library(data.table)
 library(tidyverse)
@@ -71,7 +71,6 @@ summary(fit1)
 df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
 
 ### fit waiting time distribution (exp)
-# XXXX need to change wtdttt(... subset= ...) to use non-standard evaluation
 fit3 <- wtdttt(data = df,
                last_rxtime ~ dexp(logitp, lnbeta),
                start = 0, end = 1, reverse = T, subset = packsize==200

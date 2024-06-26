@@ -57,11 +57,11 @@ sand_vcov <- function(fit) {
       myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
       sc1 <- diag(attr(numericDeriv(
-        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("logitp"), myenv), "gradient"))
+        quote(dlnorm(x, logitp, mu, lnsigma, delta = fit@delta, log=T)), c("logitp"), myenv), "gradient"))
       sc2 <- diag(attr(numericDeriv(
-        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("mu"), myenv), "gradient"))
+        quote(dlnorm(x, logitp, mu, lnsigma, delta = fit@delta, log=T)), c("mu"), myenv), "gradient"))
       sc3 <- diag(attr(numericDeriv(
-        quote(dlnorm(x, logitp, mu, lnsigma, log=T)), c("lnsigma"), myenv), "gradient"))
+        quote(dlnorm(x, logitp, mu, lnsigma, delta = fit@delta, log=T)), c("lnsigma"), myenv), "gradient"))
 
       score_mat <- cbind(mm1 * sc1, mm2 * sc2, mm3 * sc3)
 
@@ -78,11 +78,11 @@ sand_vcov <- function(fit) {
       myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
       sc1 <- diag(attr(numericDeriv(
-        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("logitp"), myenv), "gradient"))
+        quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("logitp"), myenv), "gradient"))
       sc2 <- diag(attr(numericDeriv(
-        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("lnbeta"), myenv), "gradient"))
+        quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("lnbeta"), myenv), "gradient"))
       sc3 <- diag(attr(numericDeriv(
-        quote(dweib(x, logitp, lnalpha, lnbeta, log=T)), c("lnalpha"), myenv), "gradient"))
+        quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("lnalpha"), myenv), "gradient"))
 
       score_mat <- cbind(mm1 * sc1, mm2 * sc2, mm3 * sc3)
 
@@ -97,9 +97,9 @@ sand_vcov <- function(fit) {
       myenv$x <- as.numeric(getElement(fit@data, fit@depvar))
 
       sc1 <- diag(attr(numericDeriv(
-        quote(dexp(x, logitp, lnbeta, log=T)), c("logitp"), myenv), "gradient"))
+        quote(dexp(x, logitp, lnbeta, delta = fit@delta, log=T)), c("logitp"), myenv), "gradient"))
       sc2 <- diag(attr(numericDeriv(
-        quote(dexp(x, logitp, lnbeta, log=T)), c("lnbeta"), myenv), "gradient"))
+        quote(dexp(x, logitp, lnbeta, delta = fit@delta, log=T)), c("lnbeta"), myenv), "gradient"))
 
       score_mat <- cbind(mm1 * sc1, mm2 * sc2)
 

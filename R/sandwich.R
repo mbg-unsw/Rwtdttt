@@ -45,7 +45,7 @@ sand_vcov <- function(fit) {
 
     if(fit@dist=="lnorm") {
 
-      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data), drop=F)
       mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(fit@data), drop=F)
       mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(fit@data), drop=F)
 
@@ -66,9 +66,9 @@ sand_vcov <- function(fit) {
 
     } else if(fit@dist=="weib") {
 
-      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
-      mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(fit@data))
-      mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data), drop=F)
+      mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(fit@data), drop=F)
+      mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data), drop=F)
 
       myenv <- new.env()
       myenv$logitp <- mm1 %*% fit@coef[1:ncol(mm1)]
@@ -87,8 +87,8 @@ sand_vcov <- function(fit) {
 
     } else if(fit@dist=="exp") {
 
-      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data))
-      mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data))
+      mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(fit@data), drop=F)
+      mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(fit@data), drop=F)
 
       myenv <- new.env()
       myenv$logitp <- mm1 %*% fit@coef[1:ncol(mm1)]

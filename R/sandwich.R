@@ -15,7 +15,6 @@ sand_vcov <- function(fit) {
 
 #####
 # based on code from bbmle::calc_mle2_function
-# FIXME: painfully slow
 # FIXME: redo without special case code for each density type
 # FIXME: redo to handle non-standard parameter naming
 
@@ -80,9 +79,9 @@ sand_vcov <- function(fit) {
       sc1 <- diag(attr(numericDeriv(
         quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("logitp"), myenv), "gradient"))
       sc2 <- diag(attr(numericDeriv(
-        quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("lnbeta"), myenv), "gradient"))
-      sc3 <- diag(attr(numericDeriv(
         quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("lnalpha"), myenv), "gradient"))
+      sc3 <- diag(attr(numericDeriv(
+        quote(dweib(x, logitp, lnalpha, lnbeta, delta = fit@delta, log=T)), c("lnbeta"), myenv), "gradient"))
 
       score_mat <- cbind(mm1 * sc1, mm2 * sc2, mm3 * sc3)
 

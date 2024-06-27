@@ -39,7 +39,7 @@ sand_vcov <- function(fit) {
     vpos <- list()
     for (i in seq(along=parm_form)) {
       vname <- vars[i]      ## name of variable
-      vpos[[vname]] <- which(parnames==vname)
+      vpos[[vname]] <- i
     }
 
 

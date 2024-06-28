@@ -35,12 +35,15 @@ fit_r <- ranwtdttt(data = df,
 
 summary(fit_r)
 ```
+Please see [examples.R](sandpit/examples.R) for more.
 
 ## More
 
 ### Known bugs
 
 Robust variance calculation, used by default in the randwtdttt() function, is very slow. We are working on improving this.
+
+Other planned improvements are listed in [TODO](sandpit/TODO)
 
 ### Bug reports, feature requests etc.
 
@@ -56,6 +59,8 @@ The package was developed by:
 * Henrik Støvring
 * Malcolm Gillies
 * Olga Paoletti
+
+Thank you to Jesper Hallas for kindly allowing us to reproduce the synthetic dispensing data in the `drugpakud.dta` dataset.
 
 ### License
 

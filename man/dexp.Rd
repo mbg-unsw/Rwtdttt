@@ -17,6 +17,9 @@ dexp(x, logitp, lnbeta, delta = 1, log = FALSE)
 
 \item{log}{logical; if TRUE, probabilities p are given as log(p)}
 }
+\value{
+Density. The length of the result is the maximum of the lengths of the numerical arguments.
+}
 \description{
 The Exponential distribution
 }

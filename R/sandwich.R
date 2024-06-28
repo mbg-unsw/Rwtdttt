@@ -5,10 +5,7 @@
 #' @param fit an object of class "wtd" returned by `ranwtdttt()`
 #'
 #' @return sand_vcov returns a matrix
-#' @importFrom stats model.matrix
-#' @importFrom numDeriv grad
-#'
-#' @examples
+#' @importFrom stats model.matrix numericDeriv
 sand_vcov <- function(fit) {
   # parse model formula components
   parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(fit@formula, ":", fixed=T))[2]), ",", fixed=T))

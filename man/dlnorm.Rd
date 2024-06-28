@@ -19,6 +19,9 @@ dlnorm(x, logitp, mu, lnsigma, delta = 1, log = FALSE)
 
 \item{log}{logical; if TRUE, density values are returned on log-scale.}
 }
+\value{
+Density. The length of the result is the maximum of the lengths of the numerical arguments.
+}
 \description{
 The Lognormal distribution
 }

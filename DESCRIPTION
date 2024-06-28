@@ -1,7 +1,7 @@
 Type: Package
 Package: Rwtdttt
 Title: Parametric Waiting Time Distribution estimation
-Version: 0.1.0
+Version: 0.2.0
 Author: Sabrina Giometto, Malcolm Gillies, Olga Paoletti, Henrik Støvring
 Maintainer: Henrik Støvring <hstov@health.sdu.dk>
 Description: Estimation of prescription durations and treatment
@@ -15,17 +15,14 @@ License: GPL (>= 3)
 Roxygen: list(markdown = TRUE)
 Imports: 
     bbmle,
-    class,
     data.table (>= 1.15.0),
-    dplyr,
-    haven,
     methods,
     graphics,
     rlang,
-    stats,
-    numDeriv
+    stats
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    haven
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true

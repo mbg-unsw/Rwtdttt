@@ -16,7 +16,7 @@
 #' @slot isreverse logical; indicates whether a forward or backward distribution is used
 #'
 #' @exportClass wtd
-#' @importClassesFrom bbmle mle2
+#' @importClassesFrom bbmle mle2 summary.mle2
 #' @importMethodsFrom bbmle summary
 #'
 setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",

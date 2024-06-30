@@ -30,7 +30,7 @@ fit_r <- ranwtdttt(data = df,
                    id = "pid",
                    start = as.Date('2014-01-01'),
                    end = as.Date('2014-12-31'),
-                   reverse = T, robust = F
+                   reverse = T
 )
 
 summary(fit_r)
@@ -42,8 +42,6 @@ Please see [examples.R](sandpit/examples.R) for more.
 ### Known bugs
 
 Please see github issues for known bugs.
-
-Other planned improvements are listed in [TODO](sandpit/TODO)
 
 Other planned improvements are listed in [TODO](sandpit/TODO)
 

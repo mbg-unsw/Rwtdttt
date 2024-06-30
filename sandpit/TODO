@@ -3,5 +3,5 @@
 * add summary/print methods for wtd class
 * back transform data to original date range for plot method
 * improve plot output for plot method
-* speed up robust variance estimator
+* robust estimator further improvements: space, numerical accuracy, try residual-based estimate
 * benchmark and optimise

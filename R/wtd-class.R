@@ -17,6 +17,7 @@
 #'
 #' @exportClass wtd
 #' @importClassesFrom bbmle mle2
+#' @importMethodsFrom bbmle summary
 #'
 setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
                                          depvar="character", idvar="character",

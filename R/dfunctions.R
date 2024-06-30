@@ -7,13 +7,9 @@
 #' @param delta width of interval with positive support (x in (0; delta))
 #' @param log logical; if TRUE, density values are returned on log-scale.
 #'
-#' @return
+#' @return Density. The length of the result is the maximum of the lengths of the numerical arguments.
 #' @export
 #' @importFrom stats pnorm
-#'
-#' @examples
-#'
-#'
 
 dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 
@@ -44,10 +40,8 @@ dlnorm <- function(x, logitp, mu, lnsigma, delta = 1, log = FALSE) {
 #' @param delta width of interval with positive support (x in (0; delta))
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
-#' @return
+#' @return Density. The length of the result is the maximum of the lengths of the numerical arguments.
 #' @export
-#'
-#' @examples
 dweib <- function(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))
@@ -73,10 +67,8 @@ dweib <- function(x, logitp, lnalpha, lnbeta, delta = 1, log = FALSE) {
 #' @param delta width of interval with positive support (x in (0; delta))
 #' @param log logical; if TRUE, probabilities p are given as log(p)
 #'
-#' @return
+#' @return Density. The length of the result is the maximum of the lengths of the numerical arguments.
 #' @export
-#'
-#' @examples
 dexp <- function(x, logitp, lnbeta, delta = 1, log = FALSE) {
 
   prob <- exp(logitp) / (1 + exp(logitp))

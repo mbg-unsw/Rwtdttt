@@ -1,0 +1,187 @@
+     1 . use "sand_test_data.dta"
+      
+     4 . generate ldd = ln(ddd)
+      
+     7 . encode sex, gen(nsex)
+      
+     8 . noisily wtdttt rxshift, start('01jan2014') end('31dec2014') reverse vce cluster(id) disttype(lnorm) mucovar(ldd) lnsigmacovar(i.nsex)
+      
+      Iteration 0:   log pseudolikelihood = -514.15206  
+      Iteration 1:   log pseudolikelihood = -505.58926  (not concave)
+      Iteration 2:   log pseudolikelihood = -505.33325  
+      Iteration 3:   log pseudolikelihood = -504.97062  
+      Iteration 4:   log pseudolikelihood = -503.06211  
+      Iteration 5:   log pseudolikelihood =  -502.8825  
+      Iteration 6:   log pseudolikelihood = -502.87914  
+      Iteration 7:   log pseudolikelihood = -502.87913  
+      
+                                                      Number of obs     =         93
+                                                      Wald chi2(0)      =          .
+      Log pseudolikelihood = -502.87913               Prob > chi2       =          .
+      
+                                          (Std. Err. adjusted for 25 clusters in id)
+      ------------------------------------------------------------------------------
+                   |               Robust
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+      logitp       |
+             _cons |   1.628411   .9637691     1.69   0.091    -.2605421    3.517363
+      -------------+----------------------------------------------------------------
+      mu           |
+               ldd |  -.0341678   .2234382    -0.15   0.878    -.4720986     .403763
+             _cons |   4.502846   1.022085     4.41   0.000     2.499596    6.506096
+      -------------+----------------------------------------------------------------
+      lnsigma      |
+              nsex |
+                M  |  -.1903611   .3572682    -0.53   0.594    -.8905939    .5098716
+             _cons |  -.4296352   .1935475    -2.22   0.026    -.8089813    -.050289
+      ------------------------------------------------------------------------------
+      
+          prevfrac:  invlogit([logitp]_b[_cons])
+         iadperc80:  exp(invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons])
+      logiadperc80:  invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons]
+      
+      ------------------------------------------------------------------------------
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+          prevfrac |   .8359518   .1321678     6.32   0.000     .5769076    1.094996
+         iadperc80 |   156.1049    164.698     0.95   0.343    -166.6973    478.9071
+      logiadperc80 |   5.050528   1.055047     4.79   0.000     2.982674    7.118382
+      ------------------------------------------------------------------------------
+      
+     9 . noisily wtdttt rxshift, start('01jan2014') end('31dec2014') reverse vce cluster(id) disttype(lnorm) logitpcovar(i.nsex)
+      
+      Iteration 0:   log pseudolikelihood = -514.15206  
+      Iteration 1:   log pseudolikelihood = -505.44384  
+      Iteration 2:   log pseudolikelihood = -502.98497  
+      Iteration 3:   log pseudolikelihood = -502.23924  
+      Iteration 4:   log pseudolikelihood = -502.23379  
+      Iteration 5:   log pseudolikelihood =  -502.1685  
+      Iteration 6:   log pseudolikelihood = -502.16508  
+      Iteration 7:   log pseudolikelihood = -502.16504  
+      
+                                                      Number of obs     =         93
+                                                      Wald chi2(1)      =       0.60
+      Log pseudolikelihood = -502.16504               Prob > chi2       =     0.4398
+      
+                                          (Std. Err. adjusted for 25 clusters in id)
+      ------------------------------------------------------------------------------
+                   |               Robust
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+      logitp       |
+              nsex |
+                M  |   1.462675   1.893522     0.77   0.440    -2.248559    5.173909
+             _cons |   .9107039   .8770309     1.04   0.299    -.8082452    2.629653
+      -------------+----------------------------------------------------------------
+      mu           |
+             _cons |   4.349997   .1936015    22.47   0.000     3.970545    4.729449
+      -------------+----------------------------------------------------------------
+      lnsigma      |
+             _cons |  -.5312647   .1566291    -3.39   0.001    -.8382521   -.2242773
+      ------------------------------------------------------------------------------
+      
+          prevfrac:  invlogit([logitp]_b[_cons])
+         iadperc80:  exp(invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons])
+      logiadperc80:  invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons]
+      
+      ------------------------------------------------------------------------------
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+          prevfrac |   .7131442   .1794138     3.97   0.000     .3614995    1.064789
+         iadperc80 |   127.0719   20.11059     6.32   0.000      87.6559     166.488
+      logiadperc80 |   4.844753   .1582615    30.61   0.000     4.534567     5.15494
+      ------------------------------------------------------------------------------
+      
+    10 . noisily wtdttt rxshift, start('01jan2014') end('31dec2014') reverse vce cluster(id) disttype(lnorm) logitpcovar(i.nsex) mucovar(ldd)
+      
+      Iteration 0:   log pseudolikelihood = -514.15206  
+      Iteration 1:   log pseudolikelihood = -505.43796  
+      Iteration 2:   log pseudolikelihood = -502.95839  
+      Iteration 3:   log pseudolikelihood = -502.22868  (not concave)
+      Iteration 4:   log pseudolikelihood = -502.20407  
+      Iteration 5:   log pseudolikelihood =  -502.1502  
+      Iteration 6:   log pseudolikelihood = -502.14921  
+      Iteration 7:   log pseudolikelihood =  -502.1492  
+      
+                                                      Number of obs     =         93
+                                                      Wald chi2(1)      =       0.50
+      Log pseudolikelihood =  -502.1492               Prob > chi2       =     0.4806
+      
+                                          (Std. Err. adjusted for 25 clusters in id)
+      ------------------------------------------------------------------------------
+                   |               Robust
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+      logitp       |
+              nsex |
+                M  |   1.549211   2.196649     0.71   0.481    -2.756142    5.854563
+             _cons |    .940242     .90121     1.04   0.297    -.8260971    2.706581
+      -------------+----------------------------------------------------------------
+      mu           |
+               ldd |  -.0492302   .2285697    -0.22   0.829    -.4972187    .3987582
+             _cons |   4.549897   1.022103     4.45   0.000     2.546611    6.553182
+      -------------+----------------------------------------------------------------
+      lnsigma      |
+             _cons |   -.528977   .1513491    -3.50   0.000    -.8256158   -.2323383
+      ------------------------------------------------------------------------------
+      
+          prevfrac:  invlogit([logitp]_b[_cons])
+         iadperc80:  exp(invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons])
+      logiadperc80:  invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons]
+      
+      ------------------------------------------------------------------------------
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+          prevfrac |   .7191485   .1820209     3.95   0.000     .3623941    1.075903
+         iadperc80 |   155.3664     159.54     0.97   0.330    -157.3263     468.059
+      logiadperc80 |   5.045786   1.026863     4.91   0.000     3.033171    7.058401
+      ------------------------------------------------------------------------------
+      
+    11 . noisily wtdttt rxshift, start('01jan2014') end('31dec2014') reverse vce cluster(id) disttype(lnorm) logitpcovar(i.nsex) mucovar(ldd) lnsigmacovar(ldd)
+      
+      Iteration 0:   log pseudolikelihood = -514.15206  
+      Iteration 1:   log pseudolikelihood = -505.29292  (not concave)
+      Iteration 2:   log pseudolikelihood = -502.45783  
+      Iteration 3:   log pseudolikelihood = -501.40039  
+      Iteration 4:   log pseudolikelihood = -500.66349  
+      Iteration 5:   log pseudolikelihood = -500.41861  
+      Iteration 6:   log pseudolikelihood = -500.36551  
+      Iteration 7:   log pseudolikelihood = -500.36518  
+      Iteration 8:   log pseudolikelihood = -500.36518  
+      
+                                                      Number of obs     =         93
+                                                      Wald chi2(1)      =       0.68
+      Log pseudolikelihood = -500.36518               Prob > chi2       =     0.4080
+      
+                                          (Std. Err. adjusted for 25 clusters in id)
+      ------------------------------------------------------------------------------
+                   |               Robust
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+      logitp       |
+              nsex |
+                M  |   1.084159    1.31022     0.83   0.408    -1.483825    3.652142
+             _cons |   .9028284   .8548098     1.06   0.291    -.7725681    2.578225
+      -------------+----------------------------------------------------------------
+      mu           |
+               ldd |   .1931069   .2345789     0.82   0.410    -.2666593    .6528732
+             _cons |   3.603582   1.078933     3.34   0.001     1.488912    5.718251
+      -------------+----------------------------------------------------------------
+      lnsigma      |
+               ldd |   -1.03725    .275231    -3.77   0.000    -1.576693   -.4978073
+             _cons |   3.266444   1.058989     3.08   0.002     1.190863    5.342025
+      ------------------------------------------------------------------------------
+      
+          prevfrac:  invlogit([logitp]_b[_cons])
+         iadperc80:  exp(invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons])
+      logiadperc80:  invnormal(.8) * exp([lnsigma]_b[_cons]) + [mu]_b[_cons]
+      
+      ------------------------------------------------------------------------------
+           rxshift |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+      -------------+----------------------------------------------------------------
+          prevfrac |   .7115304   .1754539     4.06   0.000     .3676471    1.055414
+         iadperc80 |   1.41e+11   3.27e+12     0.04   0.966    -6.27e+12    6.55e+12
+      logiadperc80 |   25.66915    23.2522     1.10   0.270    -19.90433    71.24263
+      ------------------------------------------------------------------------------
+      

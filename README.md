@@ -41,7 +41,9 @@ Please see [examples.R](sandpit/examples.R) for more.
 
 ### Known bugs
 
-Robust variance calculation, used by default in the randwtdttt() function, is very slow. We are working on improving this.
+Please see github issues for known bugs.
+
+Other planned improvements are listed in [TODO](sandpit/TODO)
 
 Other planned improvements are listed in [TODO](sandpit/TODO)
 

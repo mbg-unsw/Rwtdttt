@@ -45,6 +45,8 @@ Please see github issues for known bugs.
 
 Other planned improvements are listed in [TODO](sandpit/TODO)
 
+Other planned improvements are listed in [TODO](sandpit/TODO)
+
 ### Bug reports, feature requests etc.
 
 This is a young project with some rough edges. Please submit any bug reports, feature request and comments as a Github issue.

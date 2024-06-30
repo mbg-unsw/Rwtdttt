@@ -359,7 +359,7 @@ plot(fit4)
 
 predict(fit4)
 
-# Extract a small subset and test with covariates
+# Extract a small subset and test with covariates ----
 df <- haven::read_dta(system.file("extdata", "drugpakud.dta", package="Rwtdttt"))
 set.seed(1)
 ids <- sample(unique(df$id), size=1000)
@@ -370,7 +370,7 @@ fit1 <- ranwtdttt(data = df2,
   rxdate ~ dlnorm(logitp, mu, lnsigma),
   id = "id",
   start = as.Date('2014-01-01'), end = as.Date('2014-12-31'),
-  subset = atc=='A10AC01'&!is.na(ddd), reverse=T, nsamp=5,
+  subset = atc=='B01AC04'&!is.na(ddd), reverse=T, nsamp=5,
   parameters=list(mu~log(ddd))
 )
 summary(fit1)

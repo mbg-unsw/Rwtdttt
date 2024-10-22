@@ -1,6 +1,4 @@
 # XXXX other test ideas for wtdttt()
-# * pid works with alpha and numeric pids
-# * preprocess works as expected incl preprocess=F
 # * test errors relating to start and end (types, values etc)
 # * naming of parameters, including naming of parameter formulae
 # * formatted output of print(), summary() [move to wtd-class testing?]
@@ -217,6 +215,28 @@ testthat::test_that("preprocessing errors", {
 
   testthat::expect_length(x@data$tr, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 1-0.3)
+
+  # Check that nothing happens to the data when preprocess=F
+
+  dt <- data.frame(t=dt_exp$t[dt_exp$t >= 0 & dt_exp$t <= 1])
+  dt$id <- seq_along(dt$t); dt$id <- dt$id %% 2 # only two different ids
+
+  x <- wtdttt(dt, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1, preprocess=F)
+
+  testthat::expect_identical(x@data$t, dt$t)
+  testthat::expect_identical(x@data$id, dt$id)
+
+  # Quick check that alphanumeric ids work OK
+
+  dt_exp$pid <- sprintf("A%05d", dt_exp$id)
+
+  # both within obs window, reverse=F
+  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.4), pid=c(dt_exp$pid, "A99999", "A99999")),
+              form = t ~ dexp(logitp, lnbeta),
+              id="pid", start=0, end=1)
+
+  testthat::expect_length(x@data$t, orig_n+1)
+  testthat::expect_equal(x@data$t[x@data$pid=="A99999"], 0.3)
 
 })
 

@@ -125,16 +125,64 @@ testthat::test_that("preprocessing errors", {
 
   testthat::expect_lte(max(x@data$rxshift), 365.5)
   testthat::expect_gte(min(x@data$rxshift), 0.5)
+  testthat::expect_lte(length(x@data$pid), npid)
+  testthat::expect_equal(length(x@data$pid), length(unique(x@data$pid)))
 
   # now test when nsamp > 1
   # check different scenarios, each one both forward and reverse
   # XXXX
 
+  set.seed(127)
+
+  # XXXX repeat all tests a few times to allow random variation in sampling?
+
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dlnorm(logitp, mu, lnsigma),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = FALSE,
+                 robust = FALSE,
+                 nsamp = 5
+  )
+
+  testthat::expect_lte(max(x@data$rxshift), 365.5)
+  testthat::expect_gte(min(x@data$rxshift), 0.5)
+  testthat::expect_lte(length(x@data$pid), 5*npid)
+  testthat::expect_lte(length(x@data$pid), 5*length(unique(x@data$pid)))
+
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dlnorm(logitp, mu, lnsigma),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = TRUE,
+                 robust = FALSE,
+                 nsamp = 5
+  )
+
+  testthat::expect_lte(max(x@data$rxshift), 365.5)
+  testthat::expect_gte(min(x@data$rxshift), 0.5)
+  testthat::expect_lte(length(x@data$pid), 5*npid)
+  testthat::expect_lte(length(x@data$pid), 5*length(unique(x@data$pid)))
+
   # Quick check that alphanumeric ids work OK
 
   rd$apid <- sprintf("A%05d", rd$pid)
 
-  # XXXX
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dlnorm(logitp, mu, lnsigma),
+                 id = "apid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = TRUE,
+                 robust = FALSE
+  )
+
+  testthat::expect_lte(max(x@data$rxshift), 365.5)
+  testthat::expect_gte(min(x@data$rxshift), 0.5)
+  testthat::expect_lte(length(x@data$pid), npid)
+  testthat::expect_equal(length(x@data$pid), length(unique(x@data$pid)))
 })
 
 
@@ -198,37 +246,86 @@ testthat::test_that("basics", {
                                               0.0001877469, 0.0012496759, -0.004001219,
                                               0.0024136993, -0.0040012191, 0.0283231302), tolerance=0.001)
 
-  # testthat::expect_warning(
-  #   x <- wtdttt(dt_exp, form = t ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1),
-  #   "The id variable was not provided"
-  # )
-  #
-  # testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.1304, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["lnalpha"]), -0.2724, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), 2.7721, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["delta"]), 1)
-  #
-  # testthat::expect_equal(as.vector(x@vcov),
-  #                        c(0.3170, -0.07393, 0.04061, -0.07393, 0.1100,
-  #                          -0.1823, 0.04061, -0.1823, 0.3759), tolerance=0.001)
+  set.seed(127)
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dweib(logitp, lnalpha, lnbeta),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = TRUE,
+                 robust = FALSE
+  )
 
-  # x <- ranwtdttt(dt_exp, form = t ~ dlnorm(logitp, mu, lnsigma), start=0, end=1)
-  #
-  # testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.1040, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["mu"]), -2.754, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["lnsigma"]), -0.1161, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["delta"]), 1)
-  #
-  # testthat::expect_equal(as.vector(x@vcov), c(0.2965, -0.006223, 0.05308, -0.006223,
-  #                                             0.1816, -0.08350,  0.05308, -0.08350,
-  #                                             0.05993), tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.1425, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["lnalpha"]), 1.616, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), -4.3886, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["delta"]), 365)
 
-  # dt_exp$tr <- 1 - dt_exp$t
+  # XXXX could check the log likelihood too
 
-  # x <- wtdttt(dt_exp, form = tr ~ dexp(logitp, lnbeta), start=0, end=1, reverse=T)
-  #
-  # testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 0.92326, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), 2.44031, tolerance=0.001)
-  # testthat::expect_equal(as.vector(x@fullcoef["delta"]), 1)
+  testthat::expect_equal(as.vector(x@vcov), c( 0.0130308759, -0.0015652083, -0.0003395173,
+                                              -0.0015652083,  0.0315019131, -0.0031927367,
+                                              -0.0003395173, -0.0031927367,  0.0009624777), tolerance=0.001)
+
+  set.seed(127)
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dexp(logitp, lnbeta),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = TRUE,
+                 robust = FALSE
+  )
+
+  testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.4518, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), -3.8353, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["delta"]), 365)
+
+  # XXXX could check the log likelihood too
+
+  testthat::expect_equal(as.vector(x@vcov), c( 0.025053120, -0.003949551,
+                                              -0.003949551,  0.003587246), tolerance=0.001)
+
+  set.seed(127)
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dexp(logitp, lnbeta),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = FALSE,
+                 robust = FALSE
+  )
+
+  testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.2546, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), -3.7065, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["delta"]), 365)
+
+  # XXXX could check the log likelihood too
+
+  testthat::expect_equal(as.vector(x@vcov), c( 0.019456371, -0.003097151,
+                                              -0.003097151,  0.003572717), tolerance=0.001)
+
+
+  # now with robust=T
+
+  set.seed(127)
+  x <- ranwtdttt(data = rd,
+                 rxdate ~ dexp(logitp, lnbeta),
+                 id = "pid",
+                 start = as.Date('2014-01-01'),
+                 end = as.Date('2014-12-31'),
+                 reverse = TRUE,
+                 robust = TRUE,
+                 nsamp = 5
+  )
+
+  testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.3134, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["lnbeta"]), -3.8324, tolerance=0.001)
+  testthat::expect_equal(as.vector(x@fullcoef["delta"]), 365)
+
+  # XXXX could check the log likelihood too
+
+  testthat::expect_equal(as.vector(x@vcov), c( 0.0115917136, -0.0004325173,
+                                              -0.0004325173,  0.0006074480), tolerance=0.001)
 
 })

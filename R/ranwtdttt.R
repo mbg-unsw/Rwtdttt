@@ -80,11 +80,11 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
       if (!reverse) {
 
-        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta), .SD[1L], by=.id][, rxshift := .SD[[obs.ind]] - (indda-start)]
+        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta), .SD[1L], by=.id][, rxshift := .obs - (indda-start), env=list(.obs=obs.name)]
 
       } else {
 
-        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta), .SD[.N], by=.id][, rxshift := .SD[[obs.ind]] + (end - indda)]
+        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta), .SD[.N], by=.id][, rxshift := .obs + (end - indda), env=list(.obs=obs.name)]
 
       }
 

@@ -1,5 +1,6 @@
 # XXXX other test ideas for wtdttt()
 # * test errors relating to start and end (types, values etc)
+# * models with linear predictors on parameters
 # * naming of parameters, including naming of parameter formulae
 # * formatted output of print(), summary() [move to wtd-class testing?]
 # * subset

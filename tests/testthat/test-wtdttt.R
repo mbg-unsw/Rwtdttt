@@ -18,11 +18,10 @@ testthat::test_that("errors", {
     "data must be non-empty"
   )
 
-  # FIXME no way to trigger this error?
-  # testthat::expect_error(
-  #   wtdttt(data.frame(rx1time=c(1)), form = ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "obstime variable must be specified"
-  # )
+  testthat::expect_error(
+    wtdttt(data.frame(rx1time=c(1)), form = ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "obstime variable must be specified"
+  )
 
   testthat::expect_error(
     wtdttt(data.frame(rx1time=c(1)), form = foo ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),

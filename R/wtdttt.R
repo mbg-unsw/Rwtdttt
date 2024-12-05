@@ -118,11 +118,11 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   # define column names in data
   data.names <- names(cpy)
 
-  obs.name <- all.vars(form)[1]
-
-  if(is.null(obs.name)) {
+  if(!inherits(form, "formula") || attr(terms(form), "response")==0) {
     stop("obstime variable must be specified in model formula")
   }
+
+  obs.name <- all.vars(form)[1]
 
   if(!(obs.name %in% data.names)) {
     stop(paste0("'", obs.name, "'", "is not in data"))

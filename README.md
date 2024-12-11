@@ -22,7 +22,8 @@ This implementation of estimation procedures mimics that found in the correspond
 ## Example
 
 ```R
-library(haven)
+library(Rwtdttt)
+library(haven) # install.packages("haven") ## from CRAN
 df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
 
 fit_r <- ranwtdttt(data = df,

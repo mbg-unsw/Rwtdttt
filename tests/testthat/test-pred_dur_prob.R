@@ -26,8 +26,11 @@ testthat::test_that("predictions", {
   dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1402, tolerance=0.001)
@@ -39,8 +42,11 @@ testthat::test_that("predictions", {
   #                       c(0.2, 0.5), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1),
+      "The id variable was not provided"
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1168, tolerance=0.001)
@@ -51,8 +57,11 @@ testthat::test_that("predictions", {
                          c(0.2, 0.5), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+      "The id variable was not provided"
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1348, tolerance=0.001)
@@ -68,8 +77,11 @@ testthat::test_that("predictions", {
   dt_exp$tr <- 1 - dt_exp$t
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = tr ~ dexp(logitp, lnbeta), start=0, end=1, reverse=TRUE),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = tr ~ dexp(logitp, lnbeta), start=0, end=1, reverse=TRUE),
+      "The id variable was not provided"
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1402, tolerance=0.001)
@@ -81,8 +93,11 @@ testthat::test_that("predictions", {
   #                       c(0.2, 0.5), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = tr ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1, reverse=TRUE),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = tr ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1, reverse=TRUE),
+      "The id variable was not provided"
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1168, tolerance=0.001)
@@ -94,8 +109,11 @@ testthat::test_that("predictions", {
 #                         c(0.2, 0.5), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = tr ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, reverse=TRUE),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = tr ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, reverse=TRUE),
+      "The id variable was not provided"
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 0.1348, tolerance=0.001)
@@ -111,12 +129,15 @@ testthat::test_that("predictions", {
 
   rd <- readRDS(test_path("fixtures", "randat_disc.rds"))
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dexp(logitp, lnbeta),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = FALSE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dexp(logitp, lnbeta),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = FALSE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 68.41, tolerance=0.001)
@@ -127,12 +148,15 @@ testthat::test_that("predictions", {
 #  testthat::expect_equal(v(predict(x, type="prob", distrx=c(68.40503, 29.46044))),
 #                         c(0.2, 0.5), tolerance=0.001)
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dweib(logitp, lnalpha, lnbeta),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = FALSE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dweib(logitp, lnalpha, lnbeta),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = FALSE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 86.00, tolerance=0.001)
@@ -143,12 +167,15 @@ testthat::test_that("predictions", {
 #  testthat::expect_equal(v(predict(x, type="prob", distrx=c(86.00535, 67.85363))),
 #                         c(0.2, 0.5), tolerance=0.001)
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dlnorm(logitp, mu, lnsigma),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = FALSE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dlnorm(logitp, mu, lnsigma),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = FALSE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 85.06, tolerance=0.001)
@@ -161,12 +188,15 @@ testthat::test_that("predictions", {
 
   # reverse
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dexp(logitp, lnbeta),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = TRUE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dexp(logitp, lnbeta),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = TRUE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 76.19, tolerance=0.001)
@@ -177,12 +207,15 @@ testthat::test_that("predictions", {
 #  testthat::expect_equal(v(predict(x, type="prob", distrx=c(76.18548, 32.8113))),
 #                         c(0.2, 0.5), tolerance=0.001)
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dweib(logitp, lnalpha, lnbeta),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = TRUE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dweib(logitp, lnalpha, lnbeta),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = TRUE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 88.73, tolerance=0.001)
@@ -193,12 +226,15 @@ testthat::test_that("predictions", {
 #  testthat::expect_equal(v(predict(x, type="prob", distrx=c(88.72821, 70.16795))),
 #                         c(0.2, 0.5), tolerance=0.001)
 
-  x <- wtdttt(data = rd,
-                 rxdate ~ dlnorm(logitp, mu, lnsigma),
-                 id = "pid",
-                 start = as.Date('2014-01-01'),
-                 end = as.Date('2014-12-31'),
-                 reverse = TRUE
+  testthat::expect_warning(
+    x <- wtdttt(data = rd,
+                   rxdate ~ dlnorm(logitp, mu, lnsigma),
+                   id = "pid",
+                   start = as.Date('2014-01-01'),
+                   end = as.Date('2014-12-31'),
+                   reverse = TRUE
+    ),
+  "Some dates are out of the window"
   )
 
   testthat::expect_equal(v(predict(x)), 87.96, tolerance=0.001)

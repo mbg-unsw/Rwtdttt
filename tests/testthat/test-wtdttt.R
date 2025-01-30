@@ -6,6 +6,27 @@
 # * subset
 # * init
 
+testthat::test_that("warnings", {
+
+  dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
+
+  testthat::expect_warning(
+    testthat::expect_warning(
+      wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
+  )
+
+  dt_exp$id <- seq_along(dt_exp$t)
+
+  testthat::expect_warning(
+    wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
+
+})
+
 testthat::test_that("errors", {
 
   testthat::expect_error(
@@ -64,25 +85,26 @@ testthat::test_that("errors", {
 
 testthat::test_that("preprocessing errors", {
 
-  # FIXME preprocessing failure
-  # testthat::expect_error(
-  #   wtdttt(data.frame(rx1time=c(2)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "All dates are out of the window"
-  # )
+  testthat::expect_error(
+    wtdttt(data.frame(rx1time=c(2)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "All dates are out of the window"
+  )
 
-  # FIXME preprocessing failure
-  # testthat::expect_error(
-  #   wtdttt(data.frame(rx1time=c(2), id=c(1)),
-  #          form = rx1time ~ dlnorm(logitp, mu, lnsigma),
-  #          id="id", start=0, end=1),
-  #   "All dates are out of the window"
-  # )
+  testthat::expect_error(
+    wtdttt(data.frame(rx1time=c(2), id=c(1)),
+           form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+           id="id", start=0, end=1),
+    "All dates are out of the window"
+  )
 
   dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
 
   dt_exp$id <- seq_along(dt_exp$t)
 
-  x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_lte(max(x@data$t), 1)
   testthat::expect_gte(min(x@data$t), 0)
@@ -105,113 +127,155 @@ testthat::test_that("preprocessing errors", {
   dt_exp$tr <- 1 - dt_exp$t
 
   # 1. both within obs window, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.4), id=c(dt_exp$id, 99999, 99999)),
-         form = t ~ dexp(logitp, lnbeta),
-         id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.4), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 0.3)
 
   # 1. both within obs window, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 0.4), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 0.4), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n+1)
   testthat::expect_equal(x@data$tr[x@data$id==99999], 1-0.4)
 
   # 1. both within obs window, reverse=F, duplicate
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.3), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.3), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 0.3)
 
   # 1. both within obs window, reverse=T, duplicate
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 0.3), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 0.3), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n+1)
   testthat::expect_equal(x@data$tr[x@data$id==99999], 1-0.3)
 
   # 2. both greater than end, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 1.1, 1.2), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 1.1, 1.2), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 2. both greater than end, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, 1.1, 1.2), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, 1.1, 1.2), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 3. both less than begin, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, -0.1, -0.2), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, -0.1, -0.2), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 3. both less than begin, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, -0.1, -0.2), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, -0.1, -0.2), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 4. one greater, one less, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, -0.1, 1.1), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, -0.1, 1.1), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 4. one greater, one less, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, -0.1, 1.1), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, -0.1, 1.1), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n)
   testthat::expect_true(all(x@data$id!=99999))
 
   # 5. one within, one greater, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 1.1), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 1.1), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 0.3)
 
   # 5. one within, one greater, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 1.1), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, 1.1), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 1-0.3)
 
   # 6. one within, one less, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, -0.1), id=c(dt_exp$id, 99999, 99999)),
-              form = t ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, -0.1), id=c(dt_exp$id, 99999, 99999)),
+                form = t ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 0.3)
 
   # 6. one within, one less, reverse=T
-  x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, -0.1), id=c(dt_exp$id, 99999, 99999)),
-              form = tr ~ dexp(logitp, lnbeta),
-              id="id", start=0, end=1, reverse=T)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(tr=c(dt_exp$tr, 0.3, -0.1), id=c(dt_exp$id, 99999, 99999)),
+                form = tr ~ dexp(logitp, lnbeta),
+                id="id", start=0, end=1, reverse=T),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$tr, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$id==99999], 1-0.3)
@@ -231,39 +295,18 @@ testthat::test_that("preprocessing errors", {
   dt_exp$pid <- sprintf("A%05d", dt_exp$id)
 
   # both within obs window, reverse=F
-  x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.4), pid=c(dt_exp$pid, "A99999", "A99999")),
-              form = t ~ dexp(logitp, lnbeta),
-              id="pid", start=0, end=1)
+  testthat::expect_warning(
+    x <- wtdttt(data.frame(t=c(dt_exp$t, 0.3, 0.4), pid=c(dt_exp$pid, "A99999", "A99999")),
+                form = t ~ dexp(logitp, lnbeta),
+                id="pid", start=0, end=1),
+    "Some dates are out of the window"
+  )
 
   testthat::expect_length(x@data$t, orig_n+1)
   testthat::expect_equal(x@data$t[x@data$pid=="A99999"], 0.3)
 
 })
 
-
-testthat::test_that("warnings", {
-
-  dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
-
-  testthat::expect_warning(
-    wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-    "The id variable was not provided"
-  )
-
-  # XXXX currently broken
-  # testthat::expect_warning(
-  #   wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-  #   "Some dates are out of the window"
-  # )
-
-  # dt_exp$id <- seq_along(dt_exp$t)
-  #
-  # testthat::expect_warning(
-  #   wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1),
-  #   "Some dates are out of the window"
-  # )
-
-})
 
 # simulate test data
 # t <- c(runif(980, -1, 0) + rexp(980, rate=20), runif(30, max=1.5))
@@ -276,8 +319,11 @@ testthat::test_that("basics", {
   dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
   )
 
   testthat::expect_s4_class(x, "mle2")
@@ -292,8 +338,11 @@ testthat::test_that("basics", {
   testthat::expect_equal(as.vector(x@vcov), c(0.22448270, -0.08358377, -0.08358377, 0.08201046), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dweib(logitp, lnalpha, lnbeta), start=0, end=1),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
   )
 
   testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.1304, tolerance=0.001)
@@ -306,8 +355,11 @@ testthat::test_that("basics", {
                            -0.1823, 0.04061, -0.1823, 0.3759), tolerance=0.001)
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = t ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = t ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
   )
 
   testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 1.1040, tolerance=0.001)
@@ -322,8 +374,11 @@ testthat::test_that("basics", {
   dt_exp$tr <- 1 - dt_exp$t
 
   testthat::expect_warning(
-    x <- wtdttt(dt_exp, form = tr ~ dexp(logitp, lnbeta), start=0, end=1, reverse=T),
-    "The id variable was not provided"
+    testthat::expect_warning(
+      x <- wtdttt(dt_exp, form = tr ~ dexp(logitp, lnbeta), start=0, end=1, reverse=T),
+      "The id variable was not provided"
+    ),
+    "Some dates are out of the window"
   )
 
   testthat::expect_equal(as.vector(x@fullcoef["logitp"]), 0.92326, tolerance=0.001)

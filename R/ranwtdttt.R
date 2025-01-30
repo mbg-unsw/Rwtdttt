@@ -42,8 +42,15 @@ NULL
 ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
                       nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {
 
-# XXXX add error checking code from wtdttt()
-# XXXX note this function accepts date data only
+  if(is.null(data) || (nrow(data)<1)) {
+    stop("data must be non-empty")
+  }
+
+  if(!inherits(form, "formula") || attr(terms(form), "response")==0) {
+    stop("obstime variable must be specified in model formula")
+  }
+
+  setDT(data)
 
   if(!is.null(substitute(subset))) {
 
@@ -57,38 +64,51 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   }
 
-
-  setDT(data)
-
   # creation of shifted dates
 
-    obs.name <- all.vars(form)[1]
-    delta <- as.numeric(end - start)
+  obs.name <- all.vars(form)[1]
 
-    # define 'id' as key so it can be used to assign random offsets
-    kc <- c(id, obs.name); setkeyv(data, kc) # XXXX consider using indexing
+  if(!(obs.name %in% names(data))) {
+    stop(paste0("'", obs.name, "'", "is not in data"))
+  }
 
-    obs.ind <- which(colnames(data)==obs.name)
-    .id <- c(id)
+  if(!is(data[[obs.name]], "Date") || !is(start, "Date") || !is(end, "Date"))
+    stop(paste0("variables start, end and '", obs.name, "' must be all of class Date"))
 
-    off <- data.table(id=unique(data[[id]]), key=c("id"))
+  delta <- as.numeric(end - start)
 
-    f <- function() {
+  if(is.null(id) || length(id)!=1 || is.na(id) || class(id) != "character") {
+    stop("The id variable must be provided")
+  }
 
-      # all obs with the same id should get the same random offset
-      off[, indda := start + floor(runif(n=nrow(off), max=delta+1))]
+  if(!(id %in% names(data))) {
+    stop(paste0("'", id, "'", "is not in data"))
+  }
 
-      if (!reverse) {
+  # define 'id' as key so it can be used to assign random offsets
+  kc <- c(id, obs.name); setkeyv(data, kc) # XXXX consider using indexing
 
-        data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta), .SD[1L], by=.id][, rxshift := .obs - (indda-start), env=list(.obs=obs.name)]
+  obs.ind <- which(colnames(data)==obs.name)
+  .id <- c(id)
 
-      } else {
+  off <- data.table(id=unique(data[[id]]), key=c("id"))
 
-        data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta), .SD[.N], by=.id][, rxshift := .obs + (end - indda), env=list(.obs=obs.name)]
+  f <- function() {
 
-      }
+    # all obs with the same id should get the same random offset
+    off[, indda := start + floor(runif(n=nrow(off), max=delta+1))]
+
+    if (!reverse) {
+
+      data[off, indda := i.indda][data[[obs.name]] >= indda & data[[obs.name]] <= (indda + delta), .SD[1L], by=.id][, rxshift := .obs - (indda-start), env=list(.obs=obs.name)]
+
+    } else {
+
+      data[off, indda := i.indda][data[[obs.name]] <= indda & data[[obs.name]] >= (indda - delta), .SD[.N], by=.id][, rxshift := .obs + (end - indda), env=list(.obs=obs.name)]
 
     }
+
+  }
 
   # bind multiple copies of dataframes
   tmp <- do.call(rbind, replicate(nsamp, f(), simplify = FALSE))
@@ -99,7 +119,7 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
   dist <- if(isTRUE(disttmp$dlnorm==2)) "lnorm" # need isTRUE() as value can be NULL
           else if(isTRUE(disttmp$dweib==2)) "weib"
           else if(isTRUE(disttmp$dexp==2)) "exp"
-
+          else stop("model must use one of dlnorm, dweib or dexp")
 
   if(dist == "lnorm") {
 
@@ -113,7 +133,11 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
      newform <- rxshift ~ dexp(logitp, lnbeta)
 
-  } else stop("model must use one of dlnorm, dweib or dexp")
+  }
+
+  if(nrow(tmp)==0)
+    stop("All dates are out of the window defined by start and end")
+
 
   # XXXX shouldn't apply subset both here and above
   # note, pass 'id' to wtdttt() but set preprocess=F

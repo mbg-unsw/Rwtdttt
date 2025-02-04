@@ -77,7 +77,7 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   delta <- as.numeric(end - start)
 
-  if(is.null(id) || length(id)!=1 || is.na(id) || class(id) != "character") {
+  if(is.null(id) || length(id)!=1 || is.na(id)) {
     stop("The id variable must be provided")
   }
 

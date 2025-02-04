@@ -12,83 +12,78 @@
 
 testthat::test_that("errors", {
 
-  # FIXME generates the wrong error "some columns are not in the data.table"
-  # testthat::expect_error(
-  #   ranwtdttt(NULL, form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=0),
-  #   "data must be non-empty"
-  # )
+  testthat::expect_error(
+    ranwtdttt(NULL, form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=0),
+    "data must be non-empty"
+  )
 
-  # FIXME generates the wrong error "some columns are not in the data.table"
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=double()), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "data must be non-empty"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=double()), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "data must be non-empty"
+  )
 
-  # FIXME no way to trigger this error?
-  # testthat::expect_error(
-  #   wtdttt(data.frame(rx1time=c(1)), form = ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "obstime variable must be specified"
-  # )
+  testthat::expect_error(
+    wtdttt(data.frame(rx1time=c(1)), form = ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "obstime variable must be specified"
+  )
 
-  # FIXME generates the wrong error "some columns are not in the data.table: [NA, foo]"
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1)), form = foo ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "is not in data"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(1)), form = foo ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "is not in data"
+  )
 
-  # FIXME should test that everything is a date
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=as.Date("2023-01-01"), end=as.Date("2024-01-01")),
-  #   "must be either all of class"
-  # )
-  #
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=as.Date("2024-01-01")), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "must be either all of class"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=as.Date("2023-01-01"), end=as.Date("2024-01-01")),
+    "must be all of class Date"
+  )
 
-  # FIXME generates the wrong error (bug in nrow(data) < 1 test)
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, subset=rx1time!=1),
-  #   "data must be non-empty"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=as.Date("2024-01-01")), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
+    "must be all of class Date"
+  )
 
-  # FIXME
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, id=c(1,2)),
-  #   "id colname must be a single element"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, subset=rx1time!=1),
+    "data must be non-empty"
+  )
 
-  # FIXME generates the wrong error "some columns are not in the data.table: [foo]
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1, id="foo"),
-  #   "is not in data"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=as.Date("2024-01-01")), form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+              start=as.Date("2024-01-01"), end=as.Date("2025-01-01")),
+    "The id variable must be provided"
+  )
 
-  # FIXME generates the wrong error (bug in if (dist == "lnorm") ...)
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(1), id=c(1)), form = rx1time ~ dpois(lambda),
-  #          start=0, end=1, id="id"),
-  #   "model must use one of dlnorm, dweib or dexp"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=as.Date("2024-01-01")), form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+              start=as.Date("2024-01-01"), end=as.Date("2025-01-01"), id=c(1,2)),
+    "The id variable must be provided"
+  )
+
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(as.Date("2020-01-01"))),
+              form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+              start=as.Date("2020-01-01"), end=as.Date("2021-01-01"), id="foo"),
+    "is not in data"
+  )
+
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(as.Date("2020-07-01")), id=c(1)),
+              form = rx1time ~ dpois(lambda),
+              start=as.Date("2020-01-01"), end=as.Date("2021-01-01"), id="id"),
+    "model must use one of dlnorm, dweib or dexp"
+  )
 
 })
 
 testthat::test_that("preprocessing errors", {
 
-  # FIXME preprocessing failure
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(2)), form = rx1time ~ dlnorm(logitp, mu, lnsigma), start=0, end=1),
-  #   "All dates are out of the window"
-  # )
-
-  # FIXME preprocessing failure
-  # testthat::expect_error(
-  #   ranwtdttt(data.frame(rx1time=c(2), id=c(1)),
-  #          form = rx1time ~ dlnorm(logitp, mu, lnsigma),
-  #          id="id", start=0, end=1),
-  #   "All dates are out of the window"
-  # )
+  testthat::expect_error(
+    ranwtdttt(data.frame(rx1time=c(as.Date("2020-01-01")), id=c(1)),
+              form = rx1time ~ dlnorm(logitp, mu, lnsigma),
+              start=as.Date("2017-01-01"), end=as.Date("2018-01-01"),
+              id="id"),
+    "All dates are out of the window"
+  )
 
   rd <- readRDS(test_path("fixtures", "randat_disc.rds"))
   npid <- length(unique(rd$pid))
@@ -183,33 +178,6 @@ testthat::test_that("preprocessing errors", {
   testthat::expect_gte(min(x@data$rxshift), 0.5)
   testthat::expect_lte(length(x@data$pid), npid)
   testthat::expect_equal(length(x@data$pid), length(unique(x@data$pid)))
-})
-
-
-testthat::test_that("warnings", {
-
-  dt_exp <- readRDS(test_path("fixtures", "dt_exp.rds"))
-
-  # FIXME is an error rather than a warning, but generates the wrong one i.e.
-  # "some columns are not in the data.table"
-  # testthat::expect_warning(
-  #   ranwtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-  #   "The id variable was not provided"
-  # )
-
-  # XXXX currently broken
-  # testthat::expect_warning(
-  #   wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), start=0, end=1),
-  #   "Some dates are out of the window"
-  # )
-
-  # dt_exp$id <- seq_along(dt_exp$t)
-  #
-  # testthat::expect_warning(
-  #   wtdttt(dt_exp, form = t ~ dexp(logitp, lnbeta), id="id", start=0, end=1),
-  #   "Some dates are out of the window"
-  # )
-
 })
 
 # simulate test data

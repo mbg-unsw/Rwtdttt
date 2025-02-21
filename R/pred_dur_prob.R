@@ -33,6 +33,15 @@ setMethod("predict", "wtd",
           function(object, prediction.data=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
+      # 03/02/25
+      if (!is.null(prediction.data)) {
+
+        prediction.data <- as.data.table(prediction.data)
+        prediction.data <- na.action(prediction.data)
+
+      }
+
+      ##
 
        if(!is.null(distrx)) {
 
@@ -156,12 +165,165 @@ setMethod("predict", "wtd",
 
               }
 
+              # browser()
+
               if(type=="dur") {
 
                   if(!iadmean) {
 
                     out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
-                    out <- cbind(out, mm_names)
+
+                    # 23/01/25: implementing delta formula to estimate uncertainty
+
+                    parnames_mu <- grep("mu", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_mu <- gsub("\\(|\\)", "", parnames_mu)
+
+                    # constructing part of the expression related to mu
+
+                    expr_mu <- NULL
+
+                    for (i in seq_along(parnames_mu)) {
+
+                      addendo <- bquote(mm2[,.(i)] * .(as.name(parnames_mu[i])))
+
+                      if (is.null(expr_mu)) {
+
+                        expr_mu <- addendo
+
+                      } else {
+
+                        expr_mu <- bquote(.(expr_mu) + .(addendo))
+
+                      }
+
+                    }
+
+                    parnames_lnsigma <- grep("lnsigma", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_lnsigma <- gsub("\\(|\\)", "", parnames_lnsigma)
+
+                    # constructing part of the expression related to lnsigma
+
+                    expr_addend_lnsigma <- NULL
+
+                    for (i in seq_along(parnames_lnsigma)) {
+
+                      addendo <- bquote(mm3[,.(i)] * .(as.name(parnames_lnsigma[i])))
+
+                      if (is.null(expr_addend_lnsigma)) {
+
+                        expr_addend_lnsigma <- addendo
+
+                      } else {
+
+                        expr_addend_lnsigma <- bquote(.(expr_addend_lnsigma) + .(addendo))
+
+                      }
+
+                    }
+
+                    expr_lnsigma <- bquote(quant*exp(.(expr_addend_lnsigma)))
+
+                    dur <- bquote(exp(.(expr_mu) + .(expr_lnsigma)) )
+
+
+
+
+                    # des_mat <- mm2[,2] # only column related to the covariate
+                    # dur <- expression(exp(mu0 + des_mat*mu200 + quant*exp(lnsigma0 + des_mat*lnsigma200)))
+
+                    # creo le derivate parziali su i, dove i è il numero di coefficienti, separatamente per mu e lnsigma
+
+                    compute_deriv <- function(param) {
+
+                      deriv <- Deriv(dur, param)
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- qnorm(quantile)
+
+                      unique(eval(deriv, values))
+
+                    }
+
+                    # browser()
+
+                    # parnames_mu <- grep("mu", names(object@coef), value=T, fixed=F, invert=F)
+
+                    deriv_mu <- lapply(parnames_mu, compute_deriv)
+                    names(deriv_mu) <- parnames_mu
+
+                    max_len <- max(sapply(deriv_mu, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))  # Riempie con 0
+                    }
+
+                    deriv_mu <- lapply(deriv_mu, force_length, target_length = max_len)
+
+
+                    # parnames_lnsigma <- grep("lnsigma", names(object@coef), value=T, fixed=F, invert=F)
+
+                    deriv_lnsigma <- lapply(parnames_lnsigma, compute_deriv)
+                    names(deriv_lnsigma) <- parnames_lnsigma
+
+                    max_len <- max(sapply(deriv_lnsigma, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))  # Riempie con 0
+                    }
+
+                    deriv_lnsigma <- lapply(deriv_lnsigma, force_length, target_length = max_len)
+
+                    deriv_mu_m <- matrix(unlist(deriv_mu), ncol = max_len, byrow = T)
+                    deriv_lnsigma_m <- matrix(unlist(deriv_lnsigma), ncol = max_len, byrow = T)
+
+                    dpart_m <- rbind(deriv_mu_m, deriv_lnsigma_m)
+
+                    # der_mu0 <- unique(eval(Deriv(dur, "mu0"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
+                    # der_mu200 <- unique(eval(Deriv(dur, "mu200"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
+                    # der_lnsigma0 <- unique(eval(Deriv(dur, "lnsigma0"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
+                    # der_lnsigma200 <- unique(eval(Deriv(dur, "lnsigma200"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
+
+                    # dpart_m <- rbind(deriv_mu, deriv_lnsigma)
+
+                    # browser()
+
+                    out <- vector()
+
+                    for  (i in 1:ncol(dpart_m)) {
+
+                      dpart <- matrix(dpart_m[,i], nrow = 1)
+
+                      varcov <- object@vcov
+
+                      selection <- grep("^(mu|lnsigma)", rownames(varcov))
+
+                      cov_dur <- dpart %*% varcov[selection, selection] %*% t(dpart)
+
+                      se_dur <- as.vector(sqrt(cov_dur))
+
+
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- qnorm(quantile)
+
+                      dur_num <- unique(eval(dur, values))
+
+
+                      # dur_num <- unique(exp(mu0 + des_mat*mu200 + qnorm(quantile)*exp(lnsigma0 + des_mat*lnsigma200)))[i]
+
+                      dur_ci <- paste0("(", round(dur_num-1.96*se_dur,7), "-", round(dur_num+1.96*se_dur,7), ")")
+
+                      # m_names <- model.frame(formula(~packsize), data = df)
+
+                      # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+
+                      tmp <- data.frame(variable = unique(mm_names_2)[i,], duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+
+                      out <- rbind(out, tmp)
+
+                     }
+
+                    # out <- cbind(out, mm_names)
 
                   } else {
 

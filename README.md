@@ -23,6 +23,7 @@ This implementation of estimation procedures mimics that found in the correspond
 
 ```R
 library(Rwtdttt)
+library(bbmle)
 library(haven) # install.packages("haven") ## from CRAN
 df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
 

@@ -15,7 +15,9 @@ License: GPL (>= 3)
 Roxygen: list(markdown = TRUE)
 Imports: 
     bbmle,
+    boot,
     data.table (>= 1.15.0),
+    Deriv,
     methods,
     graphics,
     rlang,

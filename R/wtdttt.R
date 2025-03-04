@@ -288,22 +288,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
               start = init, data = cpy)
 
-  # browser()
-
-  # 20.02.25
-
-  out2 <- summary(out)
-
-  # prevalence: point estimate
-  prev <- round(inv.logit(out@coef["logitp.(Intercept)"]), 7)
-
-  # prevalence: 95% CI
-  ci_prev <- paste0(round(inv.logit(out@coef["logitp.(Intercept)"]-qnorm(0.975)*sqrt(out@vcov)["logitp.(Intercept)","logitp.(Intercept)"]),7), " - ", round(inv.logit(out@coef["logitp.(Intercept)"]+qnorm(0.975)*sqrt(out@vcov)["logitp.(Intercept)","logitp.(Intercept)"]),7))
-
-  prev_fin <- data.frame(prevalence = prev, CI_prevalence = ci_prev)
-  rownames(prev_fin) <- NULL
-
-  ##
 
   start <- as.character(start)
   end <- as.character(end)
@@ -316,8 +300,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@depvar <- obs.name
   out@idvar <- if(is.na(id)) character(0) else id
   out@isreverse <- reverse
-  # return(out)
+  return(out)
 
-  # 20.02.25
-  return(list(out2, Estimated_prevalence_of_drug_use = prev_fin))
 }

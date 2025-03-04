@@ -165,7 +165,6 @@ setMethod("predict", "wtd",
 
               }
 
-              # browser()
 
               if(type=="dur") {
 
@@ -228,12 +227,7 @@ setMethod("predict", "wtd",
                     dur <- bquote(exp(.(expr_mu) + .(expr_lnsigma)) )
 
 
-
-
-                    # des_mat <- mm2[,2] # only column related to the covariate
-                    # dur <- expression(exp(mu0 + des_mat*mu200 + quant*exp(lnsigma0 + des_mat*lnsigma200)))
-
-                    # creo le derivate parziali su i, dove i è il numero di coefficienti, separatamente per mu e lnsigma
+                    # function to compute partial derivatives
 
                     compute_deriv <- function(param) {
 
@@ -245,9 +239,7 @@ setMethod("predict", "wtd",
 
                     }
 
-                    # browser()
-
-                    # parnames_mu <- grep("mu", names(object@coef), value=T, fixed=F, invert=F)
+                    # apply the function to compute partial derivatives to the formula mu-part
 
                     deriv_mu <- lapply(parnames_mu, compute_deriv)
                     names(deriv_mu) <- parnames_mu
@@ -255,13 +247,13 @@ setMethod("predict", "wtd",
                     max_len <- max(sapply(deriv_mu, length))
 
                     force_length <- function(vec, target_length) {
-                      c(vec, rep(0, target_length - length(vec)))  # Riempie con 0
+                      c(vec, rep(0, target_length - length(vec)))
                     }
 
                     deriv_mu <- lapply(deriv_mu, force_length, target_length = max_len)
 
 
-                    # parnames_lnsigma <- grep("lnsigma", names(object@coef), value=T, fixed=F, invert=F)
+                    # apply the function to compute partial derivatives to the formula lnsigma-part
 
                     deriv_lnsigma <- lapply(parnames_lnsigma, compute_deriv)
                     names(deriv_lnsigma) <- parnames_lnsigma
@@ -269,7 +261,7 @@ setMethod("predict", "wtd",
                     max_len <- max(sapply(deriv_lnsigma, length))
 
                     force_length <- function(vec, target_length) {
-                      c(vec, rep(0, target_length - length(vec)))  # Riempie con 0
+                      c(vec, rep(0, target_length - length(vec)))
                     }
 
                     deriv_lnsigma <- lapply(deriv_lnsigma, force_length, target_length = max_len)
@@ -279,14 +271,7 @@ setMethod("predict", "wtd",
 
                     dpart_m <- rbind(deriv_mu_m, deriv_lnsigma_m)
 
-                    # der_mu0 <- unique(eval(Deriv(dur, "mu0"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
-                    # der_mu200 <- unique(eval(Deriv(dur, "mu200"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
-                    # der_lnsigma0 <- unique(eval(Deriv(dur, "lnsigma0"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
-                    # der_lnsigma200 <- unique(eval(Deriv(dur, "lnsigma200"), list(mu0 = object@coef[3], mu200 = object@coef[4], lnsigma0 = object@coef[5], lnsigma200 = object@coef[6], quant = qnorm(quantile))))
 
-                    # dpart_m <- rbind(deriv_mu, deriv_lnsigma)
-
-                    # browser()
 
                     out <- vector()
 
@@ -309,11 +294,8 @@ setMethod("predict", "wtd",
                       dur_num <- unique(eval(dur, values))
 
 
-                      # dur_num <- unique(exp(mu0 + des_mat*mu200 + qnorm(quantile)*exp(lnsigma0 + des_mat*lnsigma200)))[i]
-
                       dur_ci <- paste0("(", round(dur_num-1.96*se_dur,7), "-", round(dur_num+1.96*se_dur,7), ")")
 
-                      # m_names <- model.frame(formula(~packsize), data = df)
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
@@ -323,7 +305,6 @@ setMethod("predict", "wtd",
 
                      }
 
-                    # out <- cbind(out, mm_names)
 
                   } else {
 

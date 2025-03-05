@@ -114,6 +114,7 @@ setMethod("predict", "wtd",
               mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
               mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
 
+
               check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
               vec <- list(mm_names_1, mm_names_2, mm_names_3)
               mm_names <- data.frame(vec[check])
@@ -302,7 +303,9 @@ setMethod("predict", "wtd",
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names_2)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      # browser()
+
+                      tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
                       tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
 
                       out <- rbind(out, tmp)

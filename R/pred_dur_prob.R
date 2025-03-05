@@ -302,7 +302,7 @@ setMethod("predict", "wtd",
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names_2)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value, Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      tmp <- data.frame(variable = unique(mm_names_2)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
                       tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
 
                       out <- rbind(out, tmp)

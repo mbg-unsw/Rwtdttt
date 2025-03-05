@@ -34,9 +34,12 @@ setMethod("summary", "wtd",
             lower_ci_prev <- round(inv.logit(coef_value - qnorm(0.975) * sqrt(vcov_value)), 7)
 
             upper_ci_prev <- round(inv.logit(coef_value + qnorm(0.975) * sqrt(vcov_value)), 7)
+            # propagation error formula: SE(p) = partial derivative of invlogit * SE(logit)
+            se_prev <- round(prev*(1-prev)*sqrt(vcov_value), 7)
+            z_value <- round(prev/se_prev, 7)
+            p_value <- round(2*pnorm(z_value, lower.tail = F), 7)
 
-            prev_fin <- data.frame(Estimate = prev, Lower.95 = lower_ci_prev, Upper.95 = upper_ci_prev, row.names = "prevalence")
-
+            prev_fin <- data.frame(Estimate = prev, Std.Error = se_prev, z_value = z_value, p_value = p_value, Lower.95 = lower_ci_prev, Upper.95 = upper_ci_prev, row.names = "prevalence")
 
             new("summary.wtd", mle_summary, prev_fin = prev_fin)
 
@@ -57,6 +60,8 @@ setMethod("show", "summary.wtd",
             callNextMethod()
 
             cat("\n")
+            colnames(object@prev_fin) <- c("Estimate", "Std. Error", "z value", "Pr(z)", "Lower.95", "Upper.95")
             print(object@prev_fin)
+
 
           })

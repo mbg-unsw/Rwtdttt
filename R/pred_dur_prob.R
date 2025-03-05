@@ -293,13 +293,17 @@ setMethod("predict", "wtd",
 
                       dur_num <- unique(eval(dur, values))
 
+                      z <- round(dur_num/se_dur,7)
 
-                      dur_ci <- paste0("(", round(dur_num-1.96*se_dur,7), "-", round(dur_num+1.96*se_dur,7), ")")
+                      p_value <- 2*pnorm(z, lower.tail = F)
 
+                      dur_ci_lower <- round(dur_num-qnorm(0.975)*se_dur,7)
+                      dur_ci_upper <- round(dur_num+qnorm(0.975)*se_dur,7)
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names_2)[i,], duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+                      tmp <- data.frame(variable = unique(mm_names_2)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value, Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
 
                       out <- rbind(out, tmp)
 

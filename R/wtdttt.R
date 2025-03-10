@@ -68,7 +68,7 @@ NULL
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom bbmle mle2
 #' @importFrom methods as is
-#' @importFrom stats terms na.pass sd qlogis formula as.formula model.frame qnorm
+#' @importFrom stats terms na.pass na.omit sd qlogis formula as.formula model.frame qnorm
 #' @importFrom data.table as.data.table setkeyv
 #' @importFrom rlang enquo eval_tidy
 #' @export
@@ -115,11 +115,15 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   cpy <- as.data.table(data)
 
-
-  # define column names in data
-  data.names <- names(cpy)
+  if(!inherits(form, "formula") || attr(terms(form), "response")==0) {
+    stop("obstime variable must be specified in model formula")
+  }
 
   obs.name <- all.vars(form)[1]
+
+  if(!(obs.name %in% names(cpy))) {
+    stop(paste0("'", obs.name, "'", "is not in data"))
+  }
 
   # 03/02/25
   covar.names <- unique(unlist(lapply(parameters, function(x) all.vars(x)[-1])))
@@ -128,20 +132,11 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   ##
 
-  if(is.null(obs.name)) {
-    stop("obstime variable must be specified in model formula")
-  }
-
-  if(!(obs.name %in% data.names)) {
-    stop(paste0("'", obs.name, "'", "is not in data"))
-  }
-
   if(is(cpy[[obs.name]], "Date") && is(start, "Date") && is(end, "Date"))
     conttime <- 0
   else if(is(cpy[[obs.name]], "numeric") && is(start, "numeric") && is(end, "numeric"))
     conttime <- 1
   else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
-
 
   if(!is.null(substitute(subset))) {
 
@@ -155,8 +150,14 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
    }
 
-
+  orign <- nrow(cpy)
   cpy <- cpy[cpy[[obs.name]]>=start & cpy[[obs.name]]<=end]
+
+  if(nrow(cpy)==0)
+    stop("All dates are out of the window defined by start and end")
+
+  if(orign != nrow(cpy))
+    warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
 
   if(is.na(id)) {
 
@@ -175,33 +176,17 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop(paste0("'", id, "'", "is not in data"))
     }
 
-    # XXXX probably no need to do this check
-    if (nrow(unique(cpy[, id, with=F]))!=nrow(cpy)) {
-      if(reverse==FALSE) {
+    if(reverse==FALSE) {
 
-        kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
-        cpy <- cpy[, .SD[1L], by = ids, env=list(ids=id)]
+      kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+      cpy <- cpy[, .SD[1L], by = ids, env=list(ids=id)]
 
-      } else  {
+    } else  {
 
-        kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
-        cpy <- cpy[, .SD[.N], by = ids, env=list(ids=id)]
-
-        # XXXX this will never happen, out-of-range data were filtered out earlier
-        # if the dataset provided has just one row per subject, and some dates (BUT not all of them) are out of the window defined by start and end
-      }} else if ((sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=0) & (sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=nrow(cpy))) {
-
-      # throw a warning
-      warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
-
-      # if the dataset provided has just one row per subject, and ALL dates are out of the window defined by start and end
-    } else if ((sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)!=0 & sum(cpy[[obs.name]]<start | cpy[[obs.name]]>end)==nrow(cpy))) {
-
-      # throw an error
-      stop("All dates are out of the window defined by start and end")
+      kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+      cpy <- cpy[, .SD[.N], by = ids, env=list(ids=id)]
 
     }
-
   }
 
   # parse 'form' to determine the distribution in use and test if it
@@ -234,10 +219,6 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     else
       cpy[, obs.time := end - cpy[[obs.name]]]
 
-    cpy <- cpy[,(obs.name):=NULL]
-    setnames(cpy, "obs.time", obs.name)
-
-
   } else {
 
     if(!conttime)
@@ -245,10 +226,10 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
     else
       cpy[, obs.time := cpy[[obs.name]] - start]
 
-    cpy <- cpy[,(obs.name):=NULL]
-    setnames(cpy, "obs.time", obs.name)
-
   }
+
+  cpy <- cpy[,(obs.name):=NULL]
+  setnames(cpy, "obs.time", obs.name)
 
 
   nonprevend <- sum(cpy[, obs.name, with=F] > (delta * 2/3))

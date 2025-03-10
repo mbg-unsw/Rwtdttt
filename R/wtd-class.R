@@ -24,3 +24,9 @@ setClass("wtd", contains="mle2", slots=c(delta="numeric", dist="character",
                                          isreverse="logical", start="character",
                                          end="character"))
 
+
+#' Show
+#' @importFrom methods show
+#' @inheritParams methods::show
+#' @export
+show <- methods::show

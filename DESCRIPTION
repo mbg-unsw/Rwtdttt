@@ -15,6 +15,7 @@ License: GPL (>= 3)
 Roxygen: list(markdown = TRUE)
 Imports: 
     bbmle,
+    Deriv,
     data.table (>= 1.15.0),
     methods,
     graphics,
@@ -36,3 +37,5 @@ Collate:
     'wtdttt.R'
     'ranwtdttt.R'
     'sandwich.R'
+    'summary_wtd-class.R'
+    'summaryWtd.R'

@@ -28,7 +28,8 @@ NULL
 #'
 #' @return A vector of predictions
 #' @export
-#' @importFrom stats pnorm pweibull pexp
+#' @importFrom stats pnorm pweibull pexp setNames
+#' @importFrom Deriv Deriv
 setMethod("predict", "wtd",
           function(object, prediction.data=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {

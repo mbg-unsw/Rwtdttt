@@ -1,3 +1,32 @@
+
+# make sure class definition is listed first in DESCRIPTION Collate:
+#' @include summary_wtd-class.R
+NULL
+
+#' Extract coefficients
+#'
+#' Extract the coefficients from an object of class inheriting from "wtd"
+#'
+#' @param object a fitted object of class inheriting from "wtd"
+#'
+#' @returns A summary of the fitted object
+#' @export
+#'
+#' @examples
+setMethod("coef", "wtd", function(object) { object@coef })
+
+#' Extract variance-covariance matrix
+#'
+#' Extract variance-covariance matrix from an object of class inheriting from "wtd"
+#'
+#' @param object a fitted object of class inheriting from "wtd"
+#'
+#' @returns A vector of coefficients
+#' @export
+#'
+#' @examples
+setMethod("vcov", "wtd", function(object) { object@vcov })
+
 #' Summarise model object and prevalence of drug use
 #'
 #' Summarise model object from wtdttt and print the estimated prevalence of drug use along
@@ -6,6 +35,8 @@
 #' @param object a fitted object of class inheriting from "wtd"
 #'
 #' @returns A summary of the fitted object
+#' @importFrom stats plogis
+#' @importFrom methods new
 #' @export
 #'
 #' @examples
@@ -29,11 +60,11 @@ setMethod("summary", "wtd",
             }
 
             # compute prevalence and its 95% confidence interval
-            prev <- round(inv.logit(coef_value), 7)
+            prev <- round(plogis(coef_value), 7)
 
-            lower_ci_prev <- round(inv.logit(coef_value - qnorm(0.975) * sqrt(vcov_value)), 7)
+            lower_ci_prev <- round(plogis(coef_value - qnorm(0.975) * sqrt(vcov_value)), 7)
 
-            upper_ci_prev <- round(inv.logit(coef_value + qnorm(0.975) * sqrt(vcov_value)), 7)
+            upper_ci_prev <- round(plogis(coef_value + qnorm(0.975) * sqrt(vcov_value)), 7)
             # propagation error formula: SE(p) = partial derivative of invlogit * SE(logit)
             se_prev <- round(prev*(1-prev)*sqrt(vcov_value), 7)
             z_value <- round(prev/se_prev, 7)
@@ -51,6 +82,7 @@ setMethod("summary", "wtd",
 #' @param object a fitted object of class inheriting from "wtd"
 #'
 #' @returns A summary of the fitted object along with the estimated prevalence and its 95% CI
+#' @importFrom methods callNextMethod
 #' @export
 #'
 #' @examples

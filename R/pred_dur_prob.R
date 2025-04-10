@@ -73,6 +73,7 @@ setMethod("predict", "wtd",
 
        }
 
+
             ##################
 
             parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
@@ -95,10 +96,12 @@ setMethod("predict", "wtd",
               }
             }
 
+            parnames_din <- sapply(strsplit(parm_form, "~"), `[`, 1)
+
             vpos <- list()
             for (i in seq(along=parm_form)) {
               vname <- vars[i]      ## name of variable
-              vpos[[vname]] <- which(parnames==vname)
+              vpos[[vname]] <- which(parnames_din==vname)
             }
 
 
@@ -153,7 +156,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -171,8 +174,6 @@ setMethod("predict", "wtd",
               if(type=="dur") {
 
                   if(!iadmean) {
-
-                    out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
 
                     # 23/01/25: implementing delta formula to estimate uncertainty
 
@@ -274,7 +275,6 @@ setMethod("predict", "wtd",
                     dpart_m <- rbind(deriv_mu_m, deriv_lnsigma_m)
 
 
-
                     out <- vector()
 
                     for  (i in 1:ncol(dpart_m)) {
@@ -294,6 +294,7 @@ setMethod("predict", "wtd",
                       values$quant <- qnorm(quantile)
 
                       dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
 
                       z <- round(dur_num/se_dur,7)
 
@@ -302,12 +303,34 @@ setMethod("predict", "wtd",
                       dur_ci_lower <- round(dur_num-qnorm(0.975)*se_dur,7)
                       dur_ci_upper <- round(dur_num+qnorm(0.975)*se_dur,7)
 
+
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
-                      tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      # S4 object as output
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
 
-                      out <- rbind(out, tmp)
+                      # list as output
+                      # tmp <- list(Estimate = round(dur_num_v,7), SE = round(se_dur,7))#, z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i])
+
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+
+                      out <- tmp
+
+
+                      # if(!se.fit) {
+                      #
+                      #   out <- dur_num_v
+                      #
+                      # } else {
+                      #
+                      #   # out <- rbind(out, tmp)
+                      #   out <- tmp
+                      #
+                      # }
+
 
                      }
 
@@ -374,7 +397,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -513,6 +536,7 @@ setMethod("predict", "wtd",
 
 
                       dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
 
                       z <- round(dur_num/se_dur,7)
 
@@ -523,10 +547,15 @@ setMethod("predict", "wtd",
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
-                      tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      #
+                      # out <- rbind(out, tmp)
 
-                      out <- rbind(out, tmp)
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      out <- tmp
 
                     }
 
@@ -591,7 +620,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -687,11 +716,11 @@ setMethod("predict", "wtd",
 
                       se_dur <- as.vector(sqrt(cov_dur))
 
-
                       values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
                       values$quant <- quantile
 
                       dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
 
                       z <- round(dur_num/se_dur,7)
 
@@ -702,10 +731,15 @@ setMethod("predict", "wtd",
 
                       # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
 
-                      tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
-                      tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      #
+                      # out <- rbind(out, tmp)
 
-                      out <- rbind(out, tmp)
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      out <- tmp
 
                     }
 
@@ -724,7 +758,8 @@ setMethod("predict", "wtd",
 
             if(type=="dur") {
 
-              return(unique(out))
+              # return(unique(out))
+              return(out)
 
             } else if(type=="prob") {
 

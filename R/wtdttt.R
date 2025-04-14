@@ -148,7 +148,8 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop("data must be non-empty")
     }
 
-   }
+  }
+
 
   orign <- nrow(cpy)
   cpy <- cpy[cpy[[obs.name]]>=start & cpy[[obs.name]]<=end]
@@ -156,8 +157,11 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   if(nrow(cpy)==0)
     stop("All dates are out of the window defined by start and end")
 
-  if(orign != nrow(cpy))
+  if(orign != nrow(cpy)) {
+
     warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
+
+  }
 
   if(is.na(id)) {
 

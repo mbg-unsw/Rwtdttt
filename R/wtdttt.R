@@ -270,7 +270,31 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   # FIXME this is very crude
   form <- formula(gsub(")", ", delta)", deparse(form)))
-  out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
+
+  # 28/04, bug in the mle2 function: linear predictors which can be specified using the parameters argument, must be listed in the same order as required by the distribution function
+
+  param_names <- sapply(parameters, function(x) as.character(x[[2]])) # actual order
+
+  if(dist == "lnorm") {
+
+    form_names <- c("logitp", "mu", "lnsigma")  # order expected
+
+  } else if(dist == "weib") {
+
+    form_names <- c("logitp", "lnalpha", "lnbeta")  # order expected
+
+  } else if(dist == "exp") {
+
+    form_names <- c("logitp", "lnbeta")  # order expected
+
+  }
+
+  ord_id <- match(form_names, param_names)
+  parameters_r <- parameters[ord_id]
+
+  #
+
+  out <- mle2(form, parameters = parameters_r, fixed = list(delta = delta),
               start = init, data = cpy)
 
 

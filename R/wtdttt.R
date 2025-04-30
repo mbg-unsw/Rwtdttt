@@ -290,7 +290,7 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   }
 
   ord_id <- match(form_names, param_names)
-  parameters_r <- parameters[ord_id]
+  parameters_r <- parameters[na.omit(ord_id)]
 
   #
 

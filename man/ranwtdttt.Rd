@@ -15,7 +15,7 @@ ranwtdttt(
   nsamp = 1,
   subset = NULL,
   robust = T,
-  na.action = na.pass,
+  na.action = na.omit,
   init = NULL,
   control = NULL,
   ...

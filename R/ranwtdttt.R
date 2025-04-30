@@ -50,7 +50,7 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
     stop("obstime variable must be specified in model formula")
   }
 
-  setDT(data)
+  data <- as.data.table(data)
 
   if(!is.null(substitute(subset))) {
 
@@ -69,15 +69,15 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
   obs.name <- all.vars(form)[1]
   covar.names <- unique(unlist(lapply(parameters, function(x) all.vars(x)[-1])))
 
+  if(!(obs.name %in% names(data))) {
+    stop(paste0("'", obs.name, "'", "is not in data"))
+  }
+
   data <- na.action(data, cols = c(obs.name, covar.names))
 
   ##
 
   # creation of shifted dates
-
-  if(!(obs.name %in% names(data))) {
-    stop(paste0("'", obs.name, "'", "is not in data"))
-  }
 
   if(!is(data[[obs.name]], "Date") || !is(start, "Date") || !is(end, "Date"))
     stop(paste0("variables start, end and '", obs.name, "' must be all of class Date"))

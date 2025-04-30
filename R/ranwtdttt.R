@@ -40,7 +40,7 @@ NULL
 #' @importFrom stats runif
 #' @export
 ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
-                      nsamp=1, subset=NULL, robust=T, na.action=na.pass, init=NULL, control=NULL, ...) {
+                      nsamp=1, subset=NULL, robust=T, na.action=na.omit, init=NULL, control=NULL, ...) {
 
   if(is.null(data) || (nrow(data)<1)) {
     stop("data must be non-empty")
@@ -50,7 +50,7 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
     stop("obstime variable must be specified in model formula")
   }
 
-  setDT(data)
+  data <- as.data.table(data)
 
   if(!is.null(substitute(subset))) {
 
@@ -64,13 +64,20 @@ ranwtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, 
 
   }
 
-  # creation of shifted dates
 
+  # 14/04/25
   obs.name <- all.vars(form)[1]
+  covar.names <- unique(unlist(lapply(parameters, function(x) all.vars(x)[-1])))
 
   if(!(obs.name %in% names(data))) {
     stop(paste0("'", obs.name, "'", "is not in data"))
   }
+
+  data <- na.action(data, cols = c(obs.name, covar.names))
+
+  ##
+
+  # creation of shifted dates
 
   if(!is(data[[obs.name]], "Date") || !is(start, "Date") || !is(end, "Date"))
     stop(paste0("variables start, end and '", obs.name, "' must be all of class Date"))

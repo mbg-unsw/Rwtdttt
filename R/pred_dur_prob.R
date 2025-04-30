@@ -28,11 +28,21 @@ NULL
 #'
 #' @return A vector of predictions
 #' @export
-#' @importFrom stats pnorm pweibull pexp
+#' @importFrom stats pnorm pweibull pexp setNames
+#' @importFrom Deriv Deriv
 setMethod("predict", "wtd",
           function(object, prediction.data=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
+      # 03/02/25
+      if (!is.null(prediction.data)) {
+
+        prediction.data <- as.data.table(prediction.data)
+        prediction.data <- na.action(prediction.data)
+
+      }
+
+      ##
 
        if(!is.null(distrx)) {
 
@@ -63,6 +73,7 @@ setMethod("predict", "wtd",
 
        }
 
+
             ##################
 
             parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
@@ -85,10 +96,12 @@ setMethod("predict", "wtd",
               }
             }
 
+            parnames_din <- sapply(strsplit(parm_form, "~"), `[`, 1)
+
             vpos <- list()
             for (i in seq(along=parm_form)) {
               vname <- vars[i]      ## name of variable
-              vpos[[vname]] <- which(parnames==vname)
+              vpos[[vname]] <- which(parnames_din==vname)
             }
 
 
@@ -104,6 +117,7 @@ setMethod("predict", "wtd",
               mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
               mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
               mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
+
 
               check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
               vec <- list(mm_names_1, mm_names_2, mm_names_3)
@@ -142,7 +156,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -156,12 +170,170 @@ setMethod("predict", "wtd",
 
               }
 
+
               if(type=="dur") {
 
                   if(!iadmean) {
 
-                    out <- exp(qnorm(quantile)*exp(lnsigma)+mu)
-                    out <- cbind(out, mm_names)
+                    # 23/01/25: implementing delta formula to estimate uncertainty
+
+                    parnames_mu <- grep("mu", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_mu <- gsub("\\(|\\)", "", parnames_mu)
+
+                    # constructing part of the expression related to mu
+
+                    expr_mu <- NULL
+
+                    for (i in seq_along(parnames_mu)) {
+
+                      addendo <- bquote(mm2[,.(i)] * .(as.name(parnames_mu[i])))
+
+                      if (is.null(expr_mu)) {
+
+                        expr_mu <- addendo
+
+                      } else {
+
+                        expr_mu <- bquote(.(expr_mu) + .(addendo))
+
+                      }
+
+                    }
+
+                    parnames_lnsigma <- grep("lnsigma", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_lnsigma <- gsub("\\(|\\)", "", parnames_lnsigma)
+
+                    # constructing part of the expression related to lnsigma
+
+                    expr_addend_lnsigma <- NULL
+
+                    for (i in seq_along(parnames_lnsigma)) {
+
+                      addendo <- bquote(mm3[,.(i)] * .(as.name(parnames_lnsigma[i])))
+
+                      if (is.null(expr_addend_lnsigma)) {
+
+                        expr_addend_lnsigma <- addendo
+
+                      } else {
+
+                        expr_addend_lnsigma <- bquote(.(expr_addend_lnsigma) + .(addendo))
+
+                      }
+
+                    }
+
+                    expr_lnsigma <- bquote(quant*exp(.(expr_addend_lnsigma)))
+
+                    dur <- bquote(exp(.(expr_mu) + .(expr_lnsigma)) )
+
+
+                    # function to compute partial derivatives
+
+                    compute_deriv <- function(param) {
+
+                      deriv <- Deriv(dur, param)
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- qnorm(quantile)
+
+                      unique(eval(deriv, values))
+
+                    }
+
+                    # apply the function to compute partial derivatives to the formula mu-part
+
+                    deriv_mu <- lapply(parnames_mu, compute_deriv)
+                    names(deriv_mu) <- parnames_mu
+
+                    max_len <- max(sapply(deriv_mu, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))
+                    }
+
+                    deriv_mu <- lapply(deriv_mu, force_length, target_length = max_len)
+
+
+                    # apply the function to compute partial derivatives to the formula lnsigma-part
+
+                    deriv_lnsigma <- lapply(parnames_lnsigma, compute_deriv)
+                    names(deriv_lnsigma) <- parnames_lnsigma
+
+                    max_len <- max(sapply(deriv_lnsigma, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))
+                    }
+
+                    deriv_lnsigma <- lapply(deriv_lnsigma, force_length, target_length = max_len)
+
+                    deriv_mu_m <- matrix(unlist(deriv_mu), ncol = max_len, byrow = T)
+                    deriv_lnsigma_m <- matrix(unlist(deriv_lnsigma), ncol = max_len, byrow = T)
+
+                    dpart_m <- rbind(deriv_mu_m, deriv_lnsigma_m)
+
+
+                    out <- vector()
+
+                    for  (i in 1:ncol(dpart_m)) {
+
+                      dpart <- matrix(dpart_m[,i], nrow = 1)
+
+                      varcov <- object@vcov
+
+                      selection <- grep("^(mu|lnsigma)", rownames(varcov))
+
+                      cov_dur <- dpart %*% varcov[selection, selection] %*% t(dpart)
+
+                      se_dur <- as.vector(sqrt(cov_dur))
+
+
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- qnorm(quantile)
+
+                      dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
+
+                      z <- round(dur_num/se_dur,7)
+
+                      p_value <- 2*pnorm(z, lower.tail = F)
+
+                      dur_ci_lower <- round(dur_num-qnorm(0.975)*se_dur,7)
+                      dur_ci_upper <- round(dur_num+qnorm(0.975)*se_dur,7)
+
+
+                      # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+
+                      # S4 object as output
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+
+                      # list as output
+                      # tmp <- list(Estimate = round(dur_num_v,7), SE = round(se_dur,7))#, z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i])
+
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+
+                      out <- tmp
+
+
+                      # if(!se.fit) {
+                      #
+                      #   out <- dur_num_v
+                      #
+                      # } else {
+                      #
+                      #   # out <- rbind(out, tmp)
+                      #   out <- tmp
+                      #
+                      # }
+
+
+                     }
+
 
                   } else {
 
@@ -225,7 +397,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -245,8 +417,147 @@ setMethod("predict", "wtd",
 
                   if(!iadmean) {
 
-                    out <- (-log(1-quantile))^(1/exp(lnalpha))/exp(lnbeta)
-                    out <- cbind(out, mm_names)
+                    # 11/03/25: implementing delta formula to estimate uncertainty
+
+                    parnames_lnalpha <- grep("lnalpha", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_lnalpha <- gsub("\\(|\\)", "", parnames_lnalpha)
+
+                    # constructing part of the expression related to lnalpha
+
+                    expr_lnalpha <- NULL
+
+                    for (i in seq_along(parnames_lnalpha)) {
+
+                      addendo <- bquote(mm2[,.(i)] * .(as.name(parnames_lnalpha[i])))
+
+                      if (is.null(expr_lnalpha)) {
+
+                        expr_lnalpha <- addendo
+
+                      } else {
+
+                        expr_lnalpha <- bquote(.(expr_lnalpha) + .(addendo))
+
+                      }
+
+                    }
+
+                    parnames_lnbeta <- grep("lnbeta", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_lnbeta <- gsub("\\(|\\)", "", parnames_lnbeta)
+
+                    # constructing part of the expression related to lnbeta
+
+                    expr_lnbeta <- NULL
+
+                    for (i in seq_along(parnames_lnbeta)) {
+
+                      addendo <- bquote(mm3[,.(i)] * .(as.name(parnames_lnbeta[i])))
+
+                      if (is.null(expr_lnbeta)) {
+
+                        expr_lnbeta <- addendo
+
+                      } else {
+
+                        expr_lnbeta <- bquote(.(expr_lnbeta) + .(addendo))
+
+                      }
+
+                    }
+
+                    dur <- bquote( (-log(1-quant))^(1/exp(.(expr_lnalpha)))/exp(.(expr_lnbeta)))
+
+
+                    # function to compute partial derivatives
+
+                    compute_deriv <- function(param) {
+
+                      deriv <- Deriv(dur, param)
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- quantile
+
+                      unique(eval(deriv, values))
+
+                    }
+
+                    # apply the function to compute partial derivatives to the formula lnalpha-part
+
+                    deriv_lnalpha <- lapply(parnames_lnalpha, compute_deriv)
+                    names(deriv_lnalpha) <- parnames_lnalpha
+
+                    max_len <- max(sapply(deriv_lnalpha, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))
+                    }
+
+                    deriv_lnalpha <- lapply(deriv_lnalpha, force_length, target_length = max_len)
+
+
+                    # apply the function to compute partial derivatives to the formula lnbeta-part
+
+                    deriv_lnbeta <- lapply(parnames_lnbeta, compute_deriv)
+                    names(deriv_lnbeta) <- parnames_lnbeta
+
+                    max_len <- max(sapply(deriv_lnbeta, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))
+                    }
+
+                    deriv_lnbeta <- lapply(deriv_lnbeta, force_length, target_length = max_len)
+
+                    deriv_lnalpha_m <- matrix(unlist(deriv_lnalpha), ncol = max_len, byrow = T)
+                    deriv_lnbeta_m <- matrix(unlist(deriv_lnbeta), ncol = max_len, byrow = T)
+
+                    dpart_m <- rbind(deriv_lnalpha_m, deriv_lnbeta_m)
+
+
+
+                    out <- vector()
+
+                    for  (i in 1:ncol(dpart_m)) {
+
+                      dpart <- matrix(dpart_m[,i], nrow = 1)
+
+                      varcov <- object@vcov
+
+                      selection <- grep("^(lnalpha|lnbeta)", rownames(varcov))
+
+                      cov_dur <- dpart %*% varcov[selection, selection] %*% t(dpart)
+
+                      se_dur <- as.vector(sqrt(cov_dur))
+
+
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- quantile
+
+
+                      dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
+
+                      z <- round(dur_num/se_dur,7)
+
+                      p_value <- 2*pnorm(z, lower.tail = F)
+
+                      dur_ci_lower <- round(dur_num-qnorm(0.975)*se_dur,7)
+                      dur_ci_upper <- round(dur_num+qnorm(0.975)*se_dur,7)
+
+                      # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      #
+                      # out <- rbind(out, tmp)
+
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      out <- tmp
+
+                    }
 
                   } else  {
 
@@ -309,7 +620,7 @@ setMethod("predict", "wtd",
               # design matrix multiplied by estimates
               est <- list()
               for (i in seq_along(parnames)) {
-                vname <- vars[i]      ## name of variable
+                vname <- parnames[i]      ## name of variable
                 est[[vname]] <- object@coef[grepl(vname, names(object@coef))]
               }
 
@@ -327,8 +638,110 @@ setMethod("predict", "wtd",
 
                   if(!iadmean) {
 
-                    out <- (-log(1-quantile))/exp(lnbeta)
-                    out <- cbind(out, mm_names)
+                    # out <- (-log(1-quantile))/exp(lnbeta)
+                    # out <- cbind(out, mm_names)
+
+                    # 11/03/25: implementing delta formula to estimate uncertainty
+
+                    parnames_lnbeta <- grep("lnbeta", names(object@coef), value=T, fixed=F, invert=F)
+
+                    parnames_lnbeta <- gsub("\\(|\\)", "", parnames_lnbeta)
+
+                    # constructing part of the expression related to lnbeta
+
+                    expr_lnbeta <- NULL
+
+                    for (i in seq_along(parnames_lnbeta)) {
+
+                      addendo <- bquote(mm2[,.(i)] * .(as.name(parnames_lnbeta[i])))
+
+                      if (is.null(expr_lnbeta)) {
+
+                        expr_lnbeta <- addendo
+
+                      } else {
+
+                        expr_lnbeta <- bquote(.(expr_lnbeta) + .(addendo))
+
+                      }
+
+                    }
+
+                    dur <- bquote( (-log(1-quant))/exp(.(expr_lnbeta)))
+
+
+                    # function to compute partial derivatives
+
+                    compute_deriv <- function(param) {
+
+                      deriv <- Deriv(dur, param)
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- quantile
+
+                      unique(eval(deriv, values))
+
+                    }
+
+
+                    # apply the function to compute partial derivatives to the formula lnbeta-part
+
+                    deriv_lnbeta <- lapply(parnames_lnbeta, compute_deriv)
+                    names(deriv_lnbeta) <- parnames_lnbeta
+
+                    max_len <- max(sapply(deriv_lnbeta, length))
+
+                    force_length <- function(vec, target_length) {
+                      c(vec, rep(0, target_length - length(vec)))
+                    }
+
+                    deriv_lnbeta <- lapply(deriv_lnbeta, force_length, target_length = max_len)
+
+                    deriv_lnbeta_m <- matrix(unlist(deriv_lnbeta), ncol = max_len, byrow = T)
+
+                    dpart_m <- deriv_lnbeta_m
+
+
+
+                    out <- vector()
+
+                    for  (i in 1:ncol(dpart_m)) {
+
+                      dpart <- matrix(dpart_m[,i], nrow = 1)
+
+                      varcov <- object@vcov
+
+                      selection <- grep("^(lnbeta)", rownames(varcov))
+
+                      cov_dur <- dpart %*% varcov[selection, selection] %*% t(dpart)
+
+                      se_dur <- as.vector(sqrt(cov_dur))
+
+                      values <- as.list(setNames(object@coef, gsub("\\(|\\)", "", names(object@coef)) ))
+                      values$quant <- quantile
+
+                      dur_num <- unique(eval(dur, values))
+                      dur_num_v <- eval(dur, values)
+
+                      z <- round(dur_num/se_dur,7)
+
+                      p_value <- 2*pnorm(z, lower.tail = F)
+
+                      dur_ci_lower <- round(dur_num-qnorm(0.975)*se_dur,7)
+                      dur_ci_upper <- round(dur_num+qnorm(0.975)*se_dur,7)
+
+                      # tmp <- data.frame(variable = as.character(unique(mm_names_2)[i,]), duration = round(dur_num,7)[i], CI95 = dur_ci[i], SE = round(se_dur,7), z = round(dur_num/se_dur,7)[i])
+
+                      # tmp <- data.frame(variable = unique(mm_names)[i,], Estimate = round(dur_num,7)[i], SE = round(se_dur,7), z = z[i], p_value = p_value[i], Lower.95= dur_ci_lower[i], Upper.95= dur_ci_upper[i], row.names = NULL)
+                      # tmp <- setNames(tmp, replace(names(tmp), names(tmp) %in% c("SE", "z", "p_value"), c("Std. Error", "z value", "Pr(z)")) )
+                      #
+                      # out <- rbind(out, tmp)
+
+                      # vector as output
+                      tmp <- round(dur_num_v,7)
+
+                      out <- tmp
+
+                    }
 
                   } else {
 
@@ -345,7 +758,8 @@ setMethod("predict", "wtd",
 
             if(type=="dur") {
 
-              return(unique(out))
+              # return(unique(out))
+              return(out)
 
             } else if(type=="prob") {
 

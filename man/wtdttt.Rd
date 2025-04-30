@@ -14,7 +14,7 @@ wtdttt(
   id = NA,
   preprocess = T,
   subset = NULL,
-  na.action = na.pass,
+  na.action = na.omit,
   init = NULL,
   control = NULL,
   ...

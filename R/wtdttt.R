@@ -68,7 +68,7 @@ NULL
 #' @return wtdttt returns an object of class "wtd" inheriting from "mle".
 #' @importFrom bbmle mle2
 #' @importFrom methods as is
-#' @importFrom stats terms na.pass sd qlogis formula as.formula model.frame qnorm
+#' @importFrom stats terms na.pass na.omit sd qlogis formula as.formula model.frame qnorm
 #' @importFrom data.table as.data.table setkeyv
 #' @importFrom rlang enquo eval_tidy
 #' @export
@@ -106,14 +106,14 @@ NULL
 
 
 wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=NA,
-                   preprocess=T, subset=NULL, na.action=na.pass, init=NULL, control=NULL, ...) {
+                   preprocess=T, subset=NULL, na.action=na.omit, init=NULL, control=NULL, ...) {
 
 
   if(is.null(data) || (nrow(data)<1)) {
     stop("data must be non-empty")
   }
 
-  setDT(data)
+  cpy <- as.data.table(data)
 
   if(!inherits(form, "formula") || attr(terms(form), "response")==0) {
     stop("obstime variable must be specified in model formula")
@@ -121,38 +121,47 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   obs.name <- all.vars(form)[1]
 
-  if(!(obs.name %in% names(data))) {
+  if(!(obs.name %in% names(cpy))) {
     stop(paste0("'", obs.name, "'", "is not in data"))
   }
 
-  if(is(data[[obs.name]], "Date") && is(start, "Date") && is(end, "Date"))
+  # 03/02/25
+  covar.names <- unique(unlist(lapply(parameters, function(x) all.vars(x)[-1])))
+
+  cpy <- na.action(cpy, cols = c(obs.name, covar.names))
+
+  ##
+
+  if(is(cpy[[obs.name]], "Date") && is(start, "Date") && is(end, "Date"))
     conttime <- 0
-  else if(is(data[[obs.name]], "numeric") && is(start, "numeric") && is(end, "numeric"))
+  else if(is(cpy[[obs.name]], "numeric") && is(start, "numeric") && is(end, "numeric"))
     conttime <- 1
   else stop(paste0("variables start, end and '", obs.name, "' must be either all of class Date or all of class numeric"))
-
 
   if(!is.null(substitute(subset))) {
 
       rows <- enquo(subset)
-      rows_val <- eval_tidy(rows, data)
-      data <- data[rows_val ,]
+      rows_val <- eval_tidy(rows, cpy)
+      cpy <- cpy[rows_val ,]
 
-    if(nrow(data)<1) {
+    if(nrow(cpy)<1) {
       stop("data must be non-empty")
     }
 
-   }
+  }
 
-  orign <- nrow(data)
-  data <- data[data[[obs.name]]>=start & data[[obs.name]]<=end]
 
-  if(nrow(data)==0)
+  orign <- nrow(cpy)
+  cpy <- cpy[cpy[[obs.name]]>=start & cpy[[obs.name]]<=end]
+
+  if(nrow(cpy)==0)
     stop("All dates are out of the window defined by start and end")
 
-  if(orign != nrow(data))
+  if(orign != nrow(cpy)) {
+
     warning("Some dates are out of the window defined by start and end. Keeping only rows within the window.")
 
+  }
 
   if(is.na(id)) {
 
@@ -167,22 +176,21 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
       stop("id colname must be a single element")
     }
 
-    if(!(id %in% names(data))) {
+    if(!(id %in% names(cpy))) {
       stop(paste0("'", id, "'", "is not in data"))
     }
 
     if(reverse==FALSE) {
 
-      kc <- c(id, obs.name); setkeyv(data, kc) # XXXX consider using indexing
-      data <- data[, .SD[1L], by = ids, env=list(ids=id)]
+      kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+      cpy <- cpy[, .SD[1L], by = ids, env=list(ids=id)]
 
     } else  {
 
-      kc <- c(id, obs.name); setkeyv(data, kc) # XXXX consider using indexing
-      data <- data[, .SD[.N], by = ids, env=list(ids=id)]
+      kc <- c(id, obs.name); setkeyv(cpy, kc) # XXXX consider using indexing
+      cpy <- cpy[, .SD[.N], by = ids, env=list(ids=id)]
 
     }
-
   }
 
   # parse 'form' to determine the distribution in use and test if it
@@ -205,34 +213,30 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   else
     delta <- end - start
 
-  ntot <- nrow(data)
+  ntot <- nrow(cpy)
 
 
   if(reverse) {
 
     if(!conttime)
-      data[, obs.time := 0.5 + as.double(end - data[[obs.name]], units="days")]
+      cpy[, obs.time := 0.5 + as.double(end - cpy[[obs.name]], units="days")]
     else
-      data[, obs.time := end - data[[obs.name]]]
-
-    data <- data[,(obs.name):=NULL]
-    setnames(data, "obs.time", obs.name)
-
+      cpy[, obs.time := end - cpy[[obs.name]]]
 
   } else {
 
     if(!conttime)
-      data[, obs.time := 0.5 + as.double(data[[obs.name]] - start, units="days")]
+      cpy[, obs.time := 0.5 + as.double(cpy[[obs.name]] - start, units="days")]
     else
-      data[, obs.time := data[[obs.name]] - start]
-
-    data <- data[,(obs.name):=NULL]
-    setnames(data, "obs.time", obs.name)
+      cpy[, obs.time := cpy[[obs.name]] - start]
 
   }
 
+  cpy <- cpy[,(obs.name):=NULL]
+  setnames(cpy, "obs.time", obs.name)
 
-  nonprevend <- sum(data[, obs.name, with=F] > (delta * 2/3))
+
+  nonprevend <- sum(cpy[, obs.name, with=F] > (delta * 2/3))
   prp <- 1 - 3 * nonprevend / ntot
 
   if(prp<0) warning("The proportion of incident users is a negative value")
@@ -244,20 +248,20 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   if(is.null(init)) {
     if(dist == "lnorm") {
 
-      muinit <- mean(log(data[[obs.name]][data[[obs.name]] < 0.5*delta]))
-      lnsinit <- log(sd(log(data[[obs.name]][data[[obs.name]] < 0.5*delta])))
+      muinit <- mean(log(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta]))
+      lnsinit <- log(sd(log(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
 
       init <- list(logitp=lpinit, mu=muinit, lnsigma=lnsinit, delta=delta)
 
     } else if(dist == "weib") {
 
-      lnbetainit <- log(1/(mean(data[[obs.name]][data[[obs.name]] < 0.5*delta])))
+      lnbetainit <- log(1/(mean(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
       lnalphainit <- 0
       init <- list(logitp=lpinit, lnalpha=lnalphainit, lnbeta=lnbetainit, delta=delta)
 
     } else if(dist == "exp") {
 
-      lnbetainit <- log(1/(mean(data[[obs.name]][data[[obs.name]] < 0.5*delta])))
+      lnbetainit <- log(1/(mean(cpy[[obs.name]][cpy[[obs.name]] < 0.5*delta])))
       init <- list(logitp=lpinit, lnbeta=lnbetainit, delta=delta)
 
     }
@@ -266,8 +270,33 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
 
   # FIXME this is very crude
   form <- formula(gsub(")", ", delta)", deparse(form)))
-  out <- mle2(form, parameters = parameters, fixed = list(delta = delta),
-              start = init, data = data)
+
+  # 28/04, bug in the mle2 function: linear predictors which can be specified using the parameters argument, must be listed in the same order as required by the distribution function
+
+  param_names <- sapply(parameters, function(x) as.character(x[[2]])) # actual order
+
+  if(dist == "lnorm") {
+
+    form_names <- c("logitp", "mu", "lnsigma")  # order expected
+
+  } else if(dist == "weib") {
+
+    form_names <- c("logitp", "lnalpha", "lnbeta")  # order expected
+
+  } else if(dist == "exp") {
+
+    form_names <- c("logitp", "lnbeta")  # order expected
+
+  }
+
+  ord_id <- match(form_names, param_names)
+  parameters_r <- parameters[na.omit(ord_id)]
+
+  #
+
+  out <- mle2(form, parameters = parameters_r, fixed = list(delta = delta),
+              start = init, data = cpy)
+
 
   start <- as.character(start)
   end <- as.character(end)
@@ -281,4 +310,5 @@ wtdttt <- function(data, form, parameters=NULL, start=NA, end=NA, reverse=F, id=
   out@idvar <- if(is.na(id)) character(0) else id
   out@isreverse <- reverse
   return(out)
+
 }

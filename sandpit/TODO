@@ -1,7 +1,10 @@
-* add/fix test cases
 * convert example datasets into R format
-* add summary/print methods for wtd class
 * back transform data to original date range for plot method
 * improve plot output for plot method
 * speed up robust variance estimator
 * benchmark and optimise
+* add test cases for:
+- wtdttt(..., na.action=)
+- ranwtdttt(..., na.action=)
+- predict() with linear predictors
+- predict() with SE

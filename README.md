@@ -7,7 +7,7 @@ Rwtdttt is an R package to estimate parameters of the ordinary or reverse waitin
 You can install `Rwtdttt` from `github` using the `devtools` package
 
 ```r
-require(devtools)
+library(devtools)
 install_github('mbg-unsw/Rwtdttt')
 ```
 

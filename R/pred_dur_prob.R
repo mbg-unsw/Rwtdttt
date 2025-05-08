@@ -34,47 +34,23 @@ setMethod("predict", "wtd",
           function(object, prediction.data=NULL, type="dur", iadmean=F, distrx=NULL, quantile=0.8,
                    se.fit=FALSE, na.action=na.pass, ...) {
 
-      # 03/02/25
-      if (!is.null(prediction.data)) {
+      # 07.05.25
+      if(is.null(prediction.data)) {
 
-        prediction.data <- as.data.table(prediction.data)
-        prediction.data <- na.action(prediction.data)
+        datanew <- data.table(as.data.frame(object@data))
+
+      } else {
+
+        datanew <- data.table(as.data.frame(prediction.data))
 
       }
 
-      ##
+      distrxnew <- datanew[,get(distrx)]
+      distrx <- distrxnew
 
-       if(!is.null(distrx)) {
+      datanew <- na.action(datanew)
+      #
 
-
-
-            if(is(distrx, "Date"))
-              conttime <- 0
-            else if(is(distrx, "numeric"))
-              conttime <- 1
-
-
-            if(object@isreverse) {
-
-              if(!conttime)
-                distrx <- 0.5 + as.double(as.Date(object@end) - distrx, units="days")
-              else
-                distrx <- as.numeric(object@end) - distrx
-
-
-            } else {
-
-              if(!conttime)
-                distrx <- 0.5 + as.double(distrx - as.Date(object@start), units="days")
-              else
-                distrx <- distrx - as.numeric(object@start)
-
-            }
-
-       }
-
-
-            ##################
 
             parm_form <- unlist(strsplit(gsub(" ", "", unlist(strsplit(object@formula, ":", fixed=T))[2]), ",", fixed=T))
 
@@ -104,54 +80,41 @@ setMethod("predict", "wtd",
               vpos[[vname]] <- which(parnames_din==vname)
             }
 
+            if (!is.null(prediction.data)) {
+
+              for (i in seq_along(parnames)) {
+
+                if (length(labels(terms(as.formula(parm_form[i]))))!=0) {
+
+                  if ((sum(!labels(terms(as.formula(parm_form[i]))) %in% names(prediction.data)==T)) >=1) {
+
+                    stop("Covariates used in the estimation are not in the prediction dataset (new data)")
+
+                  }
+
+                }
+
+              }
+            }
+
 
             # Lognormal distribution
             if(object@dist=="lnorm") {
 
-              if (is.null(prediction.data)) {
+              mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=datanew)
+              mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=datanew)
+              mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=datanew)
 
-              mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-              mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
-              mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
-
-              mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-              mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(object@data))
-              mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(object@data))
+              mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=datanew)
+              mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=datanew)
+              mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=datanew)
 
 
               check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
               vec <- list(mm_names_1, mm_names_2, mm_names_3)
               mm_names <- data.frame(vec[check])
 
-              } else {
 
-                for (i in seq_along(parnames)) {
-
-                  if (length(labels(terms(as.formula(parm_form[i]))))!=0) {
-
-                    if ((sum(!labels(terms(as.formula(parm_form[i]))) %in% names(prediction.data)==T)) >=1) {
-
-                      stop("Covariates used in the estimation are not in the prediction dataset (new data)")
-
-                    }
-
-                  }
-
-                }
-
-                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm2 <- model.matrix(formula(models[vpos[["mu"]]]), data=as.data.frame(prediction.data))
-                mm3 <- model.matrix(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(prediction.data))
-
-                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm_names_2 <- model.frame(formula(models[vpos[["mu"]]]), data=as.data.frame(prediction.data))
-                mm_names_3 <- model.frame(formula(models[vpos[["lnsigma"]]]), data=as.data.frame(prediction.data))
-
-                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
-                vec <- list(mm_names_1, mm_names_2, mm_names_3)
-                mm_names <- data.frame(vec[check])
-
-              }
 
               # design matrix multiplied by estimates
               est <- list()
@@ -350,21 +313,19 @@ setMethod("predict", "wtd",
 
             } else if(object@dist=="weib") {
 
-              if (is.null(prediction.data)) {
+                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=datanew)
+                mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=datanew)
+                mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=datanew)
 
-                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-                mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(object@data))
-                mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
-
-                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-                mm_names_2 <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(object@data))
-                mm_names_3 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=datanew)
+                mm_names_2 <- model.frame(formula(models[vpos[["lnalpha"]]]), data=datanew)
+                mm_names_3 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=datanew)
 
                 check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
                 vec <- list(mm_names_1, mm_names_2, mm_names_3)
                 mm_names <- data.frame(vec[check])
 
-              } else {
+                if (!is.null(prediction.data)) {
 
                 for (i in seq_along(parnames)) {
 
@@ -379,18 +340,6 @@ setMethod("predict", "wtd",
                   }
 
                 }
-
-                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm2 <- model.matrix(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(prediction.data))
-                mm3 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
-
-                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm_names_2 <- model.frame(formula(models[vpos[["lnalpha"]]]), data=as.data.frame(prediction.data))
-                mm_names_3 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
-
-                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2], dim(mm_names_3)[2]))
-                vec <- list(mm_names_1, mm_names_2, mm_names_3)
-                mm_names <- data.frame(vec[check])
 
               }
 
@@ -577,19 +526,17 @@ setMethod("predict", "wtd",
               # Exponential distribution
             } else if(object@dist=="exp") {
 
-              if (is.null(prediction.data)) {
+                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=datanew)
+                mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=datanew)
 
-                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-                mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
-
-                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(object@data))
-                mm_names_2 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(object@data))
+                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=datanew)
+                mm_names_2 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=datanew)
 
                 check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2]))
                 vec <- list(mm_names_1, mm_names_2)
                 mm_names <- data.frame(vec[check])
 
-              } else {
+                if (!is.null(prediction.data)) {
 
                 for (i in seq_along(parnames)) {
 
@@ -604,16 +551,6 @@ setMethod("predict", "wtd",
                   }
 
                 }
-
-                mm1 <- model.matrix(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm2 <- model.matrix(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
-
-                mm_names_1 <- model.frame(formula(models[vpos[["logitp"]]]), data=as.data.frame(prediction.data))
-                mm_names_2 <- model.frame(formula(models[vpos[["lnbeta"]]]), data=as.data.frame(prediction.data))
-
-                check <- which.max(c(dim(mm_names_1)[2], dim(mm_names_2)[2]))
-                vec <- list(mm_names_1, mm_names_2)
-                mm_names <- data.frame(vec[check])
 
               }
 

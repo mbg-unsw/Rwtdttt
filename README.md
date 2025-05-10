@@ -1,14 +1,16 @@
-# Rwtdttt
+# wtdr
 
-Rwtdttt is an R package to estimate parameters of the ordinary or reverse waiting time distribution (WTD) for applications in pharmacoepidemiology and drug utilisation research.
+wtdr is an R package to estimate parameters of the ordinary or reverse waiting time distribution (WTD) for applications in pharmacoepidemiology and drug utilisation research.
+
+The package was previous named Rwtdttt and renamed in May 2025.
 
 ## Installation
 
-You can install `Rwtdttt` from `github` using the `devtools` package
+You can install `wtdr` from `github` using the `devtools` package
 
 ```r
 library(devtools)
-install_github('mbg-unsw/Rwtdttt')
+install_github('mbg-unsw/wtdr')
 ```
 
 ## Description
@@ -22,9 +24,9 @@ This implementation of estimation procedures mimics that found in the correspond
 ## Example
 
 ```R
-library(Rwtdttt)
+library(wtdr)
 library(haven) # install.packages("haven") ## from CRAN
-df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="Rwtdttt"))
+df <- read_dta(system.file("extdata", "ranwtddat_discdates.dta", package="wtdr"))
 
 fit_r <- ranwtdttt(data = df,
                    rxdate ~ dlnorm(logitp, mu, lnsigma),
@@ -65,5 +67,5 @@ Thank you to Jesper Hallas for kindly allowing us to reproduce the synthetic dis
 
 ### License
 
-Rwtdttt is licensed under the GNU General Public License, Version 3.
+wtdr is licensed under the GNU General Public License, Version 3.
 

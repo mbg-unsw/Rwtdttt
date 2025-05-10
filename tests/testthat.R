@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(Rwtdttt)
+library(wtdr)
 
-test_check("Rwtdttt")
+test_check("wtdr")

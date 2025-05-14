@@ -77,7 +77,7 @@ NULL
 #' # Fit the WTD with a lognormal distribution ----------------------------------------------------
 #'
 #' # load data
-#' df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="Rwtdttt"))
+#' df <- haven::read_dta(system.file("extdata", "wtddat_dates.dta", package="wtdr"))
 #'
 #' # fit the model
 #' fit1 <- wtdttt(data = df,
@@ -90,7 +90,7 @@ NULL
 #' # Fit a reverse WTD with covariates -------------------------------------------------------------
 #'
 #' # load data
-#' df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="Rwtdttt"))
+#' df <- haven::read_dta(system.file("extdata", "wtddat_covar.dta", package="wtdr"))
 #'
 #' # make packsize a factor
 #' df$packsize <- as.factor(df$packsize)

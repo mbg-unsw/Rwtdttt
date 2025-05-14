@@ -14,7 +14,7 @@ testthat::test_that("sand_vcov", {
                  preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(1.3589, -0.29219, -0.10844, 0.061022,
                                             -0.29219, 0.070556, -0.0027567, -0.019837,
@@ -31,7 +31,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(0.10848, -0.047162, 0.003902, 0.0096262,
                                             -0.047162, 0.93357, -0.19538, -0.093098,
@@ -48,7 +48,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(1.3376, -0.28631, -0.10424, -0.069179, 0.12615,
                                             -0.28631, 0.068666, -0.0033899, 0.02058, -0.038535,
@@ -67,7 +67,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(0.10374, 0.03292, -0.0025923, -0.0050395, -0.041474,
                                             0.03292, 1.1644, -0.16353, -0.18515, -0.38125,
@@ -85,7 +85,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(0.097875, 0.016859, -0.052579, 0.0039012, 0.012879,
                                             0.016859, 0.54406, -0.55587, 0.04539, -0.047837,
@@ -103,7 +103,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(1.3696, -0.2948, -0.10362, -0.10761, 0.037867,
                                             -0.2948, 0.071501, -0.0039146, 0.038834, -0.013928,
@@ -121,7 +121,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   testthat::expect_equal(as.vector(vcov), c(0.11171, 0.28402, -0.034493, -0.01623, -0.14642,
                                             0.28402, 5.6226, -0.7214, 0.0067689, -3.3635,
@@ -141,7 +141,7 @@ testthat::test_that("sand_vcov", {
               preprocess = FALSE
   )
 
-  vcov <- Rwtdttt:::sand_vcov(x)
+  vcov <- wtdr:::sand_vcov(x)
 
   # testthat::expect_equal(as.vector(vcov), c(0.078545, 0.0011788, 3.5972e-10, 9.7782e-10, 1.2142e-11,
   #                                           0.0011788, 2.1986e-05, 5.3991e-12, 1.4677e-11, 1.8228e-13,
